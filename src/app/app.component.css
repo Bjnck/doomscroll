@@ -1,6 +1,121 @@
-body{
-  text-align: center;
-  font-family: arial, sans-serif;
-  background-color: #212121;
-  color:white;
+#title {
+  font-size: 200%;
+  margin-bottom: 50px;
+  margin-top: 30px;
 }
+
+.box {
+  height: 20vh;
+  min-height: 150px;
+  background-color: #212121;
+  margin-bottom: 30px;
+  padding: 5px;
+  font-size: 150%;
+  border-radius: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.box.menu {
+  background-color: darkslateblue;
+  border: 5px outset #3c3273;
+}
+.box.menu.active {
+  border: 5px inset #3c3273;
+}
+
+.box.text {
+  border: 3px solid #5b5b5b;
+}
+
+.arrow {
+  font-size: 170%;
+}
+
+.box.symbol {
+  font-size: 400%;
+}
+
+.box.symbol.model {
+  background-color: goldenrod;
+  border: 5px solid #ffbf24;
+}
+
+.box.symbol.inactive {
+  border: 5px solid #5b5b5b;
+}
+
+.box.symbol.empty {
+  background-color: #212121;
+  border: 3px solid #5b5b5b;
+}
+
+.box.symbol.red {
+  background-color: darkred;
+  border: 5px outset #a80000;
+}
+.box.symbol.green {
+  background-color: darkgreen;
+  border: 5px outset #008d00;
+}
+.box.symbol.blue {
+  background-color: darkblue;
+  border: 5px outset #0e0e5d;
+ }
+.box.symbol.purple {
+  background-color: rebeccapurple;
+  border: 5px outset #763eb2;
+}
+.box.symbol.orange {
+  background-color: orangered;
+  border: 5px outset #ff6c34;
+}
+.box.symbol.cyan {
+  background-color: darkcyan;
+  border: 5px outset #00b4b4;
+}
+
+.box.level {
+  flex-direction: column;
+  background-color: goldenrod;
+  border: 5px outset #ffbf24;
+}
+
+.box.level.inactive {
+  background-color: #9d740a;
+  border: 5px solid #6e5207;
+  color: rgba(255, 255, 255, 0.7);
+}
+.box.level.complete {
+  background-color: goldenrod;
+  border: 5px solid #ffbf24;
+}
+.box.level.start {
+  font-weight: bold;
+}
+.box.level.timer {
+  font-weight: bold;
+}
+.box.level.restart {
+  font-weight: bold;
+}
+
+.box.level .goal {
+  font-size: 150%;
+  margin-bottom: 3px;
+}
+.box.level .time {
+  font-size: 100%;
+  color: forestgreen;
+}
+.box.level .gameover {
+  font-size: 175%;
+  color: red;
+  margin-bottom: 5px;
+}
+.box.level .share {
+  margin-bottom: 10px;
+}
+

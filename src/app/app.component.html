@@ -1,12 +1,164 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Doomscroll</title>
-    <link rel="icon" href="" type="image/icon type">
-  </head>
-  <body>
-  <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
-  <h1>Doomscroll</h1>
+<div
+  id="infinite-scroll"
+  infiniteScroll
+  [infiniteScrollDistance]="2"
+  [infiniteScrollThrottle]="50"
+  (scrolled)="onScroll()">
 
-  </body>
-</html>
+  <div id="title">{{title}}</div>
+
+  <!--  tutorial -->
+  <div [ngClass]="{'active':showTutorial}" class="box menu tutorial" (click)="tutorialToggleClick()">
+    <ng-container *ngIf="!showTutorial">Tutorial</ng-container>
+    <ng-container *ngIf="showTutorial">Skip Tutorial</ng-container>
+  </div>
+
+  <ng-container *ngIf="showTutorial">
+    <div class="box text">
+      <span>
+        A new model is selected for each level<br>
+        <span class="arrow">↓</span>
+      </span>
+    </div>
+
+    <div class="box symbol model">
+      {{ symbols[tutorialModel] }}
+    </div>
+
+    <div class="box text">
+      <span>
+        Tap to change the symbols until they all match the model<br>
+      </span>
+    </div>
+
+    <div class="box text">
+      <span>
+        Colors don't matter<br>
+        <span class="arrow">↓</span>
+      </span>
+    </div>
+
+    <div [ngClass]="{'inactive':tutorialComplete,
+                     'red' : box.color==getColorPosition('red'),
+                     'green' : box.color==getColorPosition('green'),
+                     'blue' : box.color==getColorPosition('blue'),
+                     'purple' : box.color==getColorPosition('purple'),
+                     'orange' : box.color==getColorPosition('orange'),
+                     'cyan' : box.color==getColorPosition('cyan')}"
+         class="box symbol"
+         *ngFor="let box of tutorials"
+         (click)="tutorialBoxClick(box)">
+      {{ symbols[box.symbol] }}
+    </div>
+
+    <div class="box text">
+      Complete the level if all symbols are the same
+    </div>
+
+    <div class="box text">
+      <span>
+        You only have a few seconds to complete a level<br>
+        <span class="arrow">↓</span>
+      </span>
+    </div>
+
+    <ng-container [ngSwitch]="!tutorialComplete ? 1 : 2">
+      <ng-container *ngSwitchCase="1">
+        <div [ngClass]="isTutorialComplete() ? '' : 'inactive'"
+             class="box level"
+             (click)="tutorialEndClick()">
+          End tutorial
+        </div>
+      </ng-container>
+      <ng-container *ngSwitchCase="2">
+        <div class="box level complete">
+          Well done<br>
+          You can now start the game
+        </div>
+      </ng-container>
+    </ng-container>
+
+  </ng-container>
+
+  <!-- levels -->
+  <div id="start"></div>
+  <ng-container [ngSwitch]="currentLevel == 0 ? 1 : 2">
+    <ng-container *ngSwitchCase="1">
+      <div [ngClass]="tutorialComplete ? '' : 'inactive'"
+           class="box level start"
+           (click)="startGameClick()">
+        START
+      </div>
+    </ng-container>
+    <ng-container *ngSwitchCase="2">
+      <div class="box level complete">
+        <div class="goal">Level 1</div>
+        <div class="time">+{{timePerLevel}}''</div>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <div *ngFor="let level of levels">
+    <div [ngClass]="{'empty': level.num > currentLevel}"
+         class="box symbol model">
+      <span *ngIf="level.num <= currentLevel">{{ symbols[level.model] }}</span>
+    </div>
+
+    <div [ngClass]="{'empty': box.symbol<0,
+                     'inactive':level.num < currentLevel || gameOver,
+                     'red' : box.color==getColorPosition('red'),
+                     'green' : box.color==getColorPosition('green'),
+                     'blue' : box.color==getColorPosition('blue'),
+                     'purple' : box.color==getColorPosition('purple'),
+                     'orange' : box.color==getColorPosition('orange'),
+                     'cyan' : box.color==getColorPosition('cyan')}"
+         class="box symbol"
+         *ngFor="let box of level.boxes"
+         (click)="boxClick(level, box)">
+      {{ symbols[box.symbol] }}
+    </div>
+
+    <ng-container *ngIf="level.num <= currentLevel"
+                  [ngSwitch]="level.completed ? 1 : gameOver ? 2 : 3">
+
+      <ng-container *ngSwitchCase="1">
+        <div class="box level complete">
+          <div class="goal">Level {{level.num + 1}}</div>
+          <div class="time">+{{timePerLevel + level.timeRemaining}}''</div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="2">
+        <div class="box level complete">
+          <div class="gameover">Game Over</div>
+          <div class="goal">Level {{level.num}}</div>
+          <div>{{clickCount}} taps</div>
+        </div>
+
+        <div class="box level complete">
+          <div class="share">Share your score</div>
+          <share-buttons [theme]="'modern-dark'"
+                         [include]="['facebook','messenger','whatsapp']"
+                         [show]="5"
+                         [url]="'https://doomscroll-efa6f.web.app/'"
+                         [description]="'I reached level {{level.num}} in Doomscroll with only {{clickCount}} taps. Can you beat my score ?'"
+                         [tags]="'doomscroll'">
+          </share-buttons>
+        </div>
+
+        <div class="box level restart" (click)="restartGameClick()">
+          RESTART
+        </div>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="3">
+        <div [ngClass]="isLevelComplete() ? '' : 'inactive'" class="box level timer"
+             (click)="levelEndClick()">
+          ◷ {{timer | async | date: 'ss.SS'}}
+        </div>
+      </ng-container>
+
+    </ng-container>
+  </div>
+
+</div>
