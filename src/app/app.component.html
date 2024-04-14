@@ -9,8 +9,8 @@
 
   <!--  tutorial -->
   <div [ngClass]="{'active':showTutorial}" class="box menu tutorial" (click)="tutorialToggleClick()">
-    <ng-container *ngIf="!showTutorial">Tutorial</ng-container>
-    <ng-container *ngIf="showTutorial">Skip Tutorial</ng-container>
+    <ng-container *ngIf="!showTutorial">How to play ?</ng-container>
+    <ng-container *ngIf="showTutorial">Hide the tutorial</ng-container>
   </div>
 
   <ng-container *ngIf="showTutorial">
@@ -72,7 +72,7 @@
       </ng-container>
       <ng-container *ngSwitchCase="2">
         <div class="box level complete">
-          Well done<br>
+          Well done!<br>
           You can now start the game
         </div>
       </ng-container>
@@ -93,12 +93,13 @@
     <ng-container *ngSwitchCase="2">
       <div class="box level complete">
         <div class="goal">Level 1</div>
-        <div class="time">+{{timePerLevel}}''</div>
       </div>
     </ng-container>
   </ng-container>
 
   <div *ngFor="let level of levels">
+
+
     <div [ngClass]="{'empty': level.num > currentLevel}"
          class="box symbol model">
       <span *ngIf="level.num <= currentLevel">{{ symbols[level.model] }}</span>
@@ -115,7 +116,15 @@
          class="box symbol"
          *ngFor="let box of level.boxes"
          (click)="boxClick(level, box)">
-      {{ symbols[box.symbol] }}
+      <div [ngClass]="{'rotate45': box.rotate > 0.1 && box.rotate < 0.2,
+                       'rotate90': box.rotate > 0.2 && box.rotate < 0.3,
+                       'rotate135': box.rotate > 0.3 && box.rotate < 0.4,
+                       'rotate180': box.rotate > 0.4 && box.rotate < 0.5,
+                       'rotate225': box.rotate > 0.5 && box.rotate < 0.6,
+                       'rotate270': box.rotate > 0.6 && box.rotate < 0.7,
+                       'rotate315': box.rotate > 0.7 && box.rotate < 0.8}">
+        {{ symbols[box.symbol] }}
+      </div>
     </div>
 
     <ng-container *ngIf="level.num <= currentLevel"
@@ -124,7 +133,8 @@
       <ng-container *ngSwitchCase="1">
         <div class="box level complete">
           <div class="goal">Level {{level.num + 1}}</div>
-          <div class="time">+{{timePerLevel + level.timeRemaining}}''</div>
+          <div *ngIf="getLevel(level.num + 1).symbol > 0">new symbol: <span class="add">{{symbols[getLevel(level.num + 1).symbol]}}</span></div>
+          <div *ngIf="level.num + 1 == levelForRotation">symbols can now change position</div>
         </div>
       </ng-container>
 
@@ -132,16 +142,16 @@
         <div class="box level complete">
           <div class="gameover">Game Over</div>
           <div class="goal">Level {{level.num}}</div>
-          <div>{{clickCount}} taps</div>
+          <div>{{getPoints()}} points</div>
         </div>
 
         <div class="box level complete">
           <div class="share">Share your score</div>
           <share-buttons [theme]="'modern-dark'"
-                         [include]="['facebook','messenger','whatsapp']"
+                         [include]="['whatsapp', 'sms']"
                          [show]="5"
                          [url]="'https://doomscroll-efa6f.web.app/'"
-                         [description]="'I reached level {{level.num}} in Doomscroll with only {{clickCount}} taps. Can you beat my score ?'"
+                         [description]="'I reached level '+ level.num +' in Doomscroll with '+getPoints()+' points. Can you beat my score ?'"
                          [tags]="'doomscroll'">
           </share-buttons>
         </div>
@@ -152,8 +162,8 @@
       </ng-container>
 
       <ng-container *ngSwitchCase="3">
-        <div [ngClass]="isLevelComplete() ? '' : 'inactive'" class="box level timer"
-             (click)="levelEndClick()">
+        <div [ngClass]="isLevelComplete(level.num) ? '' : 'inactive'" class="box level timer"
+             (click)="levelEndClick(level.num)">
           ◷ {{timer | async | date: 'ss.SS'}}
         </div>
       </ng-container>

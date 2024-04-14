@@ -10,7 +10,9 @@ export class AppComponent {
   title = "Dᛜᛜmᛇcrᛜᛂᛂ";
 
   boxPerLevel: number = 5;
-  timePerLevel: number = 10;
+  timePerLevel: number = 15;
+  levelsForNewSymbols: number = 3;
+  levelForRotation: number = 20;
 
   //https://symbl.cc/en/collections/simvoli-vk/
   symbols: string[] = ["ᛄ", "ᛇ", "ᛂ"];
@@ -58,7 +60,8 @@ export class AppComponent {
     for (let i = 0; i < this.boxPerLevel; i++) {
       boxes.push({
         symbol: this.randomSymbolFromOrigin(this.tutorialModel),
-        color: this.randomColor()
+        color: this.randomColor(),
+        rotate: 0
       });
     }
     return boxes;
@@ -79,6 +82,7 @@ export class AppComponent {
     if (!this.tutorialComplete) {
       box.symbol = this.applyModuloSymbol(box.symbol + 1);
       box.color = this.randomColorFromOrigin(box.color);
+      box.rotate = Math.random();
     }
   }
 
@@ -98,13 +102,13 @@ export class AppComponent {
   levelTime: Date = new Date();
   timer: Observable<number> | undefined;
   gameOver: boolean = false;
-  clickCount: number = 0;
+  points: number = 0;
 
   startGameClick() {
     if (this.tutorialComplete) {
-      this.fillBoxes();
+      this.fillLevel(this.currentLevel + 1);
       this.currentLevel++;
-      this.startTimer(0);
+      this.startTimer();
     }
   }
 
@@ -114,19 +118,22 @@ export class AppComponent {
     this.levelTime = new Date();
     this.timer = undefined;
     this.gameOver = false;
-    this.clickCount = 0;
+    this.points = 0;
+
+    this.symbols = ["ᛄ", "ᛇ", "ᛂ"];
+    this.symbolsAdditional = ["ᛚ", "ᛢ", "ᛮ", "ᛛ", "ᚾ", "ᛀ", "ᛁ", "ᛃ", "ᛑ", "ᛙ", "ᛜ",];
 
     const element = document.querySelector('#start');
     if (element)
       element.scrollIntoView();
   }
 
-  startTimer(previousLevelRemaining: number) {
+  startTimer() {
     let date = new Date();
-    date.setSeconds(date.getSeconds() + this.timePerLevel + previousLevelRemaining);
+    date.setSeconds(date.getSeconds() + this.timePerLevel);
     this.levelTime = date;
 
-    let level = this.getCurrentLevel();
+    let level = this.getLevel(this.currentLevel);
     if (level)
       level.endTime = date;
 
@@ -146,23 +153,69 @@ export class AppComponent {
     this.gameOver = true;
   }
 
-  getCurrentLevel(): Level | undefined {
-    return this.levels.at(this.currentLevel - 1);
+  getPoints(): number {
+    let points = 100 * (this.currentLevel - 1);
+    for (let i = 0; i < this.currentLevel; i++) {
+      let level = this.levels[i];
+      points += level.points;
+    }
+    return points;
   }
 
-  getNextLevel(): Level | undefined {
-    return this.levels.at(this.currentLevel);
+  getLevel(num : number): Level {
+    let level = this.levels.at(num - 1);
+    if(level)
+      return level;
+    return this.generateLevel(num);
   }
 
   generateLevel(num: number): Level {
     return {
       num: num,
       completed: false,
-      model: this.randomSymbol(),
+      model: -1,
       boxes: this.generateEmptyBoxes(),
       endTime: new Date(),
-      timeRemaining: 0
+      points: 0,
+      symbol: -1
     };
+  }
+
+  fillLevel(num: number) {
+    let level = this.getLevel(num);
+    if (level) {
+      let symbol: number = -1;
+      if (level.num % this.levelsForNewSymbols == 0) {
+        if (this.symbols.length == 6) {
+          this.symbols = this.symbols.sort(() => Math.random() - 0.5);
+          let remove = this.symbols.pop();
+
+          this.symbolsAdditional = this.symbolsAdditional.sort(() => Math.random() - 0.5);
+          let add = this.symbolsAdditional.pop();
+
+          if (add && remove) {
+            this.symbols.push(add);
+            this.symbolsAdditional.push(remove);
+          }
+        } else {
+          this.symbolsAdditional = this.symbolsAdditional.sort(() => Math.random() - 0.5);
+          let add = this.symbolsAdditional.pop();
+          if (add)
+            this.symbols.push(add);
+        }
+        symbol = this.symbols.length - 1;
+      }
+
+      level.model = this.randomSymbol();
+      level.symbol = symbol;
+
+      for (const box of level.boxes) {
+        box.symbol = this.randomSymbolFromOrigin(level.model);
+        box.color = this.randomColor();
+        if(level.num >= this.levelForRotation)
+          box.rotate = Math.random();
+      }
+    }
   }
 
   generateEmptyBoxes(): Box[] {
@@ -171,32 +224,24 @@ export class AppComponent {
     for (let i = 0; i < n; i++) {
       symbols.push({
         symbol: -1,
-        color: -1
+        color: -1,
+        rotate: 0
       });
     }
     return symbols;
   }
 
-  fillBoxes() {
-    let level = this.getNextLevel();
-    if (level) {
-      for (const box of level.boxes) {
-        box.symbol = this.randomSymbolFromOrigin(level.model);
-        box.color = this.randomColor();
-      }
-    }
-  }
-
   boxClick(level: Level, box: Box) {
     if (level.num == this.currentLevel && !this.gameOver) {
-      this.clickCount++;
       box.symbol = this.applyModuloSymbol(box.symbol + 1);
       box.color = this.randomColorFromOrigin(box.color);
+      if(level.num >= this.levelForRotation)
+        box.rotate = Math.random();
     }
   }
 
-  isLevelComplete(): boolean {
-    let level = this.getCurrentLevel();
+  isLevelComplete(num: number): boolean {
+    let level = this.getLevel(num);
     if (level) {
       for (const box of level.boxes) {
         if (box.symbol != level.model)
@@ -207,20 +252,19 @@ export class AppComponent {
     return false;
   }
 
-  levelEndClick() {
-    if (this.isLevelComplete()) {
-      let level = this.getCurrentLevel();
+  levelEndClick(num: number) {
+    if (this.isLevelComplete(num)) {
+      let level = this.getLevel(num);
       if (level) {
-        this.clickCount++;
-        level.completed = true;
-        this.fillBoxes();
-        this.currentLevel++;
-
         let timeRemaining: number = level.endTime.getTime() - new Date().getTime();
         if (timeRemaining > 0)
-          level.timeRemaining = Math.ceil(timeRemaining / 1000);
+          level.points = Math.ceil(timeRemaining / 100); //10 points per second left
 
-        this.startTimer(level.timeRemaining);
+        level.completed = true;
+
+        this.fillLevel(num + 1);
+        this.currentLevel++;
+        this.startTimer();
       }
     }
   }
@@ -238,10 +282,12 @@ interface Level {
   model: number;
   boxes: Box[];
   endTime: Date;
-  timeRemaining: number
+  points: number;
+  symbol: number;
 }
 
 interface Box {
   symbol: number;
   color: number;
+  rotate: number;
 }

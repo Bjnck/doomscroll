@@ -38,6 +38,28 @@
   font-size: 400%;
 }
 
+.box.symbol .rotate45 {
+  transform: rotate(45deg);
+}
+.box.symbol .rotate90 {
+  transform: rotate(90deg);
+}
+.box.symbol .rotate135 {
+  transform: rotate(135deg);
+}
+.box.symbol .rotate180 {
+  transform: rotate(180deg);
+}
+.box.symbol .rotate225 {
+  transform: rotate(225deg);
+}
+.box.symbol .rotate270 {
+  transform: rotate(270deg);
+}
+.box.symbol .rotate315 {
+  transform: rotate(315deg);
+}
+
 .box.symbol.model {
   background-color: goldenrod;
   border: 5px solid #ffbf24;
@@ -56,25 +78,43 @@
   background-color: darkred;
   border: 5px outset #a80000;
 }
+.box.symbol.red.inactive {
+  border: 5px solid #a80000;
+}
 .box.symbol.green {
   background-color: darkgreen;
   border: 5px outset #008d00;
+}
+.box.symbol.green.inactive {
+  border: 5px solid #008d00;
 }
 .box.symbol.blue {
   background-color: darkblue;
   border: 5px outset #0e0e5d;
  }
+.box.symbol.blue.inactive {
+  border: 5px solid #0e0e5d;
+}
 .box.symbol.purple {
   background-color: rebeccapurple;
   border: 5px outset #763eb2;
+}
+.box.symbol.purple.inactive {
+  border: 5px solid #763eb2;
 }
 .box.symbol.orange {
   background-color: orangered;
   border: 5px outset #ff6c34;
 }
+.box.symbol.orange.inactive {
+  border: 5px solid #ff6c34;
+}
 .box.symbol.cyan {
   background-color: darkcyan;
   border: 5px outset #00b4b4;
+}
+.box.symbol.cyan.inactive {
+  border: 5px solid #00b4b4;
 }
 
 .box.level {
@@ -105,6 +145,9 @@
 .box.level .goal {
   font-size: 150%;
   margin-bottom: 3px;
+}
+.box.level .add {
+  font-size: 150%;
 }
 .box.level .time {
   font-size: 100%;
