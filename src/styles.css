@@ -1,0 +1,25 @@
+/* You can add global styles to this file, and also import other style files */
+
+@font-face { font-family: roboto-regular;
+  src: url('assets/font/Roboto-Regular.ttf'); }
+
+@font-face { font-family: noto-runnic;
+  src: url('assets/font/NotoSansRunic-Regular.ttf'); }
+
+html{
+  margin: auto;
+  text-align: center;
+  font-family: roboto-regular, noto-runnic;
+  color:white;
+  background-color: #212121;
+  max-width: 800px;
+  min-width: 300px;
+
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}
+
+html::-webkit-scrollbar {
+  display: none;
+}

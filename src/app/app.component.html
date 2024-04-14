@@ -1,0 +1,174 @@
+<div
+  id="infinite-scroll"
+  infiniteScroll
+  [infiniteScrollDistance]="2"
+  [infiniteScrollThrottle]="50"
+  (scrolled)="onScroll()">
+
+  <div id="title">{{title}}</div>
+
+  <!--  tutorial -->
+  <div [ngClass]="{'active':showTutorial}" class="box menu tutorial" (click)="tutorialToggleClick()">
+    <ng-container *ngIf="!showTutorial">How to play ?</ng-container>
+    <ng-container *ngIf="showTutorial">Hide the tutorial</ng-container>
+  </div>
+
+  <ng-container *ngIf="showTutorial">
+    <div class="box text">
+      <span>
+        A new model is selected for each level<br>
+        <span class="arrow">↓</span>
+      </span>
+    </div>
+
+    <div class="box symbol model">
+      {{ symbols[tutorialModel] }}
+    </div>
+
+    <div class="box text">
+      <span>
+        Tap to change the symbols until they all match the model<br>
+      </span>
+    </div>
+
+    <div class="box text">
+      <span>
+        Colors don't matter<br>
+        <span class="arrow">↓</span>
+      </span>
+    </div>
+
+    <div [ngClass]="{'inactive':tutorialComplete,
+                     'red' : box.color==getColorPosition('red'),
+                     'green' : box.color==getColorPosition('green'),
+                     'blue' : box.color==getColorPosition('blue'),
+                     'purple' : box.color==getColorPosition('purple'),
+                     'orange' : box.color==getColorPosition('orange'),
+                     'cyan' : box.color==getColorPosition('cyan')}"
+         class="box symbol"
+         *ngFor="let box of tutorials"
+         (click)="tutorialBoxClick(box)">
+      {{ symbols[box.symbol] }}
+    </div>
+
+    <div class="box text">
+      Complete the level if all symbols are the same
+    </div>
+
+    <div class="box text">
+      <span>
+        You only have a few seconds to complete a level<br>
+        <span class="arrow">↓</span>
+      </span>
+    </div>
+
+    <ng-container [ngSwitch]="!tutorialComplete ? 1 : 2">
+      <ng-container *ngSwitchCase="1">
+        <div [ngClass]="isTutorialComplete() ? '' : 'inactive'"
+             class="box level"
+             (click)="tutorialEndClick()">
+          End tutorial
+        </div>
+      </ng-container>
+      <ng-container *ngSwitchCase="2">
+        <div class="box level complete">
+          Well done!<br>
+          You can now start the game
+        </div>
+      </ng-container>
+    </ng-container>
+
+  </ng-container>
+
+  <!-- levels -->
+  <div id="start"></div>
+  <ng-container [ngSwitch]="currentLevel == 0 ? 1 : 2">
+    <ng-container *ngSwitchCase="1">
+      <div [ngClass]="tutorialComplete ? '' : 'inactive'"
+           class="box level start"
+           (click)="startGameClick()">
+        START
+      </div>
+    </ng-container>
+    <ng-container *ngSwitchCase="2">
+      <div class="box level complete">
+        <div class="goal">Level 1</div>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <div *ngFor="let level of levels">
+
+
+    <div [ngClass]="{'empty': level.num > currentLevel}"
+         class="box symbol model">
+      <span *ngIf="level.num <= currentLevel">{{ symbols[level.model] }}</span>
+    </div>
+
+    <div [ngClass]="{'empty': box.symbol<0,
+                     'inactive':level.num < currentLevel || gameOver,
+                     'red' : box.color==getColorPosition('red'),
+                     'green' : box.color==getColorPosition('green'),
+                     'blue' : box.color==getColorPosition('blue'),
+                     'purple' : box.color==getColorPosition('purple'),
+                     'orange' : box.color==getColorPosition('orange'),
+                     'cyan' : box.color==getColorPosition('cyan')}"
+         class="box symbol"
+         *ngFor="let box of level.boxes"
+         (click)="boxClick(level, box)">
+      <div [ngClass]="{'rotate45': box.rotate > 0.1 && box.rotate < 0.2,
+                       'rotate90': box.rotate > 0.2 && box.rotate < 0.3,
+                       'rotate135': box.rotate > 0.3 && box.rotate < 0.4,
+                       'rotate180': box.rotate > 0.4 && box.rotate < 0.5,
+                       'rotate225': box.rotate > 0.5 && box.rotate < 0.6,
+                       'rotate270': box.rotate > 0.6 && box.rotate < 0.7,
+                       'rotate315': box.rotate > 0.7 && box.rotate < 0.8}">
+        {{ symbols[box.symbol] }}
+      </div>
+    </div>
+
+    <ng-container *ngIf="level.num <= currentLevel"
+                  [ngSwitch]="level.completed ? 1 : gameOver ? 2 : 3">
+
+      <ng-container *ngSwitchCase="1">
+        <div class="box level complete">
+          <div class="goal">Level {{level.num + 1}}</div>
+          <div *ngIf="getLevel(level.num + 1).symbol > 0">new symbol: <span class="add">{{symbols[getLevel(level.num + 1).symbol]}}</span></div>
+          <div *ngIf="level.num + 1 == levelForRotation">symbols can now change position</div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="2">
+        <div class="box level complete">
+          <div class="gameover">Game Over</div>
+          <div class="goal">Level {{level.num}}</div>
+          <div>{{getPoints()}} points</div>
+        </div>
+
+        <div class="box level complete">
+          <div class="share">Share your score</div>
+          <share-buttons [theme]="'modern-dark'"
+                         [include]="['whatsapp', 'sms']"
+                         [show]="5"
+                         [url]="'https://doomscroll-efa6f.web.app/'"
+                         [description]="'I reached level '+ level.num +' in Doomscroll with '+getPoints()+' points. Can you beat my score ?'"
+                         [tags]="'doomscroll'">
+          </share-buttons>
+        </div>
+
+        <div class="box level restart" (click)="restartGameClick()">
+          RESTART
+        </div>
+      </ng-container>
+
+      <ng-container *ngSwitchCase="3">
+        <div [ngClass]="isLevelComplete(level.num) ? '' : 'inactive'" class="box level timer"
+             (click)="levelEndClick(level.num)">
+          ◷ {{timer | async | date: 'ss.SS'}}
+        </div>
+      </ng-container>
+
+    </ng-container>
+  </div>
+
+</div>
