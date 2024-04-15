@@ -1,5 +1,6 @@
 import {Component} from '@angular/core';
 import {interval, map, Observable} from "rxjs";
+import {TranslateService} from "@ngx-translate/core";
 
 @Component({
   selector: 'app-root',
@@ -14,11 +15,35 @@ export class AppComponent {
   levelsForNewSymbols: number = 3;
   levelForRotation: number = 20;
 
+  translate: TranslateService;
+  language: string = "en";
+  supportedLanguages: string[] = ["en", "fr"];
+
   //https://symbl.cc/en/collections/simvoli-vk/
   symbols: string[] = ["ᛄ", "ᛇ", "ᛂ"];
   symbolsAdditional: string[] = ["ᛚ", "ᛢ", "ᛮ", "ᛛ", "ᚾ", "ᛀ", "ᛁ", "ᛃ", "ᛑ", "ᛙ", "ᛜ",];
 
   colors: string[] = ["green", "red", "blue", "purple", "cyan", "orange"];
+
+  constructor(translate: TranslateService) {
+    this.translate = translate;
+    let language: string = navigator.language.slice(0, 2);
+    if (this.supportedLanguages.findIndex(l => l === language) > 0) {
+      this.language = language;
+      translate.use(this.language);
+    }
+
+    //  todo init symbols and levels (copy restart strategy) + scroll back to top
+  }
+
+  languageClick() {
+    let index = this.supportedLanguages.findIndex(l => l === this.language);
+    let language = this.supportedLanguages.at((index + 1) % (this.supportedLanguages.length));
+    if (language) {
+      this.language = language;
+      this.translate.use(this.language);
+    }
+  }
 
   randomSymbol(): number {
     return Math.floor(Math.random() * (this.symbols.length));
@@ -162,9 +187,16 @@ export class AppComponent {
     return points;
   }
 
-  getLevel(num : number): Level {
+  shareContent(level: number, points: number): any {
+    return {
+      level: level,
+      points: points
+    }
+  }
+
+  getLevel(num: number): Level {
     let level = this.levels.at(num - 1);
-    if(level)
+    if (level)
       return level;
     return this.generateLevel(num);
   }
@@ -212,7 +244,7 @@ export class AppComponent {
       for (const box of level.boxes) {
         box.symbol = this.randomSymbolFromOrigin(level.model);
         box.color = this.randomColor();
-        if(level.num >= this.levelForRotation)
+        if (level.num >= this.levelForRotation)
           box.rotate = Math.random();
       }
     }
@@ -235,7 +267,7 @@ export class AppComponent {
     if (level.num == this.currentLevel && !this.gameOver) {
       box.symbol = this.applyModuloSymbol(box.symbol + 1);
       box.color = this.randomColorFromOrigin(box.color);
-      if(level.num >= this.levelForRotation)
+      if (level.num >= this.levelForRotation)
         box.rotate = Math.random();
     }
   }

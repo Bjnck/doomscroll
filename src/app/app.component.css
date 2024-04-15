@@ -19,11 +19,18 @@
 }
 
 .box.menu {
-  background-color: darkslateblue;
-  border: 5px outset #3c3273;
+  background-color: #383838;
+  border: 5px outset #5b5b5b;
 }
 .box.menu.active {
-  border: 5px inset #3c3273;
+  border: 5px inset #5b5b5b;
+}
+
+.box.menu.language {
+  flex-direction: column;
+}
+.box.menu.language .flag {
+  font-size: 300%;
 }
 
 .box.text {

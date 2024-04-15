@@ -7,18 +7,29 @@
 
   <div id="title">{{title}}</div>
 
+  <div class="box menu language" (click)="languageClick()">
+    <ng-container *ngIf="language == 'en'">
+      <div class="flag">🇬🇧</div>
+      <div>English</div>
+    </ng-container>
+    <ng-container *ngIf="language == 'fr'">
+      <div class="flag">🇫🇷</div>
+      <div>Français</div>
+    </ng-container>
+  </div>
+
   <!--  tutorial -->
   <div [ngClass]="{'active':showTutorial}" class="box menu tutorial" (click)="tutorialToggleClick()">
-    <ng-container *ngIf="!showTutorial">How to play ?</ng-container>
-    <ng-container *ngIf="showTutorial">Hide the tutorial</ng-container>
+    <ng-container *ngIf="!showTutorial">{{ 'TUTORIAL.SHOW' | translate }}</ng-container>
+    <ng-container *ngIf="showTutorial">{{ 'TUTORIAL.HIDE' | translate }}</ng-container>
   </div>
 
   <ng-container *ngIf="showTutorial">
     <div class="box text">
-      <span>
-        A new model is selected for each level<br>
+      <div>
+        {{ 'TUTORIAL.INSTRUCTION_1' | translate }}<br>
         <span class="arrow">↓</span>
-      </span>
+      </div>
     </div>
 
     <div class="box symbol model">
@@ -26,16 +37,14 @@
     </div>
 
     <div class="box text">
-      <span>
-        Tap to change the symbols until they all match the model<br>
-      </span>
+      {{ 'TUTORIAL.INSTRUCTION_2' | translate }}
     </div>
 
     <div class="box text">
-      <span>
-        Colors don't matter<br>
+      <div>
+        {{ 'TUTORIAL.INSTRUCTION_3' | translate }}<br>
         <span class="arrow">↓</span>
-      </span>
+      </div>
     </div>
 
     <div [ngClass]="{'inactive':tutorialComplete,
@@ -52,14 +61,14 @@
     </div>
 
     <div class="box text">
-      Complete the level if all symbols are the same
+      {{ 'TUTORIAL.INSTRUCTION_4' | translate }}
     </div>
 
     <div class="box text">
-      <span>
-        You only have a few seconds to complete a level<br>
+      <div>
+        {{ 'TUTORIAL.INSTRUCTION_5' | translate }}<br>
         <span class="arrow">↓</span>
-      </span>
+      </div>
     </div>
 
     <ng-container [ngSwitch]="!tutorialComplete ? 1 : 2">
@@ -67,13 +76,13 @@
         <div [ngClass]="isTutorialComplete() ? '' : 'inactive'"
              class="box level"
              (click)="tutorialEndClick()">
-          End tutorial
+          {{ 'TUTORIAL.END' | translate }}
         </div>
       </ng-container>
       <ng-container *ngSwitchCase="2">
         <div class="box level complete">
-          Well done !<br>
-          You can now start the game
+          {{ 'TUTORIAL.CONGRATS' | translate }}<br>
+          {{ 'TUTORIAL.CONTINUE' | translate }}
         </div>
       </ng-container>
     </ng-container>
@@ -87,12 +96,12 @@
       <div [ngClass]="tutorialComplete ? '' : 'inactive'"
            class="box level start"
            (click)="startGameClick()">
-        START
+        {{ 'GAME.START' | translate }}
       </div>
     </ng-container>
     <ng-container *ngSwitchCase="2">
       <div class="box level complete">
-        <div class="goal">Level 1</div>
+        <div class="goal">{{ 'GAME.LEVEL' | translate }} 1</div>
       </div>
     </ng-container>
   </ng-container>
@@ -132,32 +141,33 @@
 
       <ng-container *ngSwitchCase="1">
         <div class="box level complete">
-          <div class="goal">Level {{level.num + 1}}</div>
-          <div *ngIf="getLevel(level.num + 1).symbol > 0">new symbol: <span class="add">{{symbols[getLevel(level.num + 1).symbol]}}</span></div>
-          <div *ngIf="level.num + 1 == levelForRotation">symbols can now change position</div>
+          <div class="goal">{{ 'GAME.LEVEL' | translate }} {{level.num + 1}}</div>
+          <div *ngIf="getLevel(level.num + 1).symbol > 0">{{ 'GAME.NEW_SYMBOL' | translate }}: <span
+            class="add">{{symbols[getLevel(level.num + 1).symbol]}}</span></div>
+          <div *ngIf="level.num + 1 == levelForRotation">{{ 'GAME.POS_SYMBOL' | translate }}</div>
         </div>
       </ng-container>
 
       <ng-container *ngSwitchCase="2">
         <div class="box level complete">
-          <div class="gameover">Game Over</div>
-          <div class="goal">Level {{level.num}}</div>
-          <div>{{getPoints()}} points</div>
+          <div class="gameover">{{ 'GAME.GAME_OVER' | translate }}</div>
+          <div class="goal">{{ 'GAME.LEVEL' | translate }} {{level.num}}</div>
+          <div>{{getPoints()}} {{ 'GAME.POINTS' | translate }}</div>
         </div>
 
         <div class="box level complete">
-          <div class="share">Share your score</div>
+          <div class="share">{{ 'GAME.SHARE' | translate }}</div>
           <share-buttons [theme]="'modern-dark'"
                          [include]="['whatsapp', 'sms']"
                          [show]="5"
-                         [url]="'https://doomscroll-efa6f.web.app/'"
-                         [description]="'I reached level '+ level.num +' in Doomscroll with '+getPoints()+' points. Can you beat my score ?'"
+                         [url]="'https://doomscroll.xyz'"
+                         [description]="'GAME.SHARE_DESCRIPTION' | translate:shareContent(level.num, getPoints())"
                          [tags]="'doomscroll'">
           </share-buttons>
         </div>
 
         <div class="box level restart" (click)="restartGameClick()">
-          RESTART
+          {{ 'GAME.RESTART' | translate }}
         </div>
       </ng-container>
 
