@@ -4,17 +4,28 @@
   <meta charset="utf-8">
   <title>Doomscroll</title>
   <base href="/">
-  <meta name="description" content="Scroll to the highest level">
+  <meta name="description" content="Scroll to the highest level.">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="assets/icons/icon-64x64.png">
 
   <meta property="og:title" content="Doomscroll" />
   <meta property="og:type" content="website" />
-  <meta property="og:description" content="Scroll to the highest level" />
+  <meta property="og:description" content="Scroll to the highest level." />
 
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#212121">
   <link rel="apple-touch-icon" href="assets/icons/icon-256x256-mask.png">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-BBG02VCQ9S"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-BBG02VCQ9S');
+  </script>
+
 </head>
 <body>
   <app-root></app-root>
