@@ -20,8 +20,11 @@ export class AppComponent {
   supportedLanguages: string[] = ["en", "fr"];
 
   //https://symbl.cc/en/collections/simvoli-vk/
-  symbols: string[] = ["ᛄ", "ᛇ", "ᛂ"];
-  symbolsAdditional: string[] = ["ᛚ", "ᛢ", "ᛮ", "ᛛ", "ᚾ", "ᛀ", "ᛁ", "ᛃ", "ᛑ", "ᛙ", "ᛜ",];
+  startSymbolsPool = ["ᛄ", "ᛇ", "ᛂ"];
+  additionalSymbolsPool = ["ᛚ", "ᛢ", "ᛮ", "ᛛ", "ᚾ", "ᛀ", "ᛁ", "ᛃ", "ᛑ", "ᛙ", "ᛜ"];
+
+  symbols: string[] = this.startSymbolsPool;
+  symbolsAdditional: string[] = this.additionalSymbolsPool;
 
   colors: string[] = ["green", "red", "blue", "purple", "cyan", "orange"];
 
@@ -33,7 +36,24 @@ export class AppComponent {
       translate.use(this.language);
     }
 
-    //  todo init symbols and levels (copy restart strategy) + scroll back to top
+    this.initGame();
+
+    const element = document.querySelector('#title');
+    if (element)
+      element.scrollIntoView();
+  }
+
+  initGame(){
+    this.currentLevel = 0;
+    this.levels = [this.generateLevel(this.currentLevel + 1)];
+    this.levelTime = new Date();
+    this.timer = undefined;
+    this.gameOver = false;
+    this.points = 0;
+
+    //https://symbl.cc/en/collections/simvoli-vk/
+    this.symbols = this.startSymbolsPool;
+    this.symbolsAdditional = this.additionalSymbolsPool;
   }
 
   languageClick() {
@@ -138,15 +158,7 @@ export class AppComponent {
   }
 
   restartGameClick() {
-    this.currentLevel = 0;
-    this.levels = [this.generateLevel(this.currentLevel + 1)];
-    this.levelTime = new Date();
-    this.timer = undefined;
-    this.gameOver = false;
-    this.points = 0;
-
-    this.symbols = ["ᛄ", "ᛇ", "ᛂ"];
-    this.symbolsAdditional = ["ᛚ", "ᛢ", "ᛮ", "ᛛ", "ᚾ", "ᛀ", "ᛁ", "ᛃ", "ᛑ", "ᛙ", "ᛜ",];
+    this.initGame();
 
     const element = document.querySelector('#start');
     if (element)
