@@ -18,7 +18,7 @@
     </ng-container>
   </div>
 
-  <div [ngClass]="{'active':sound}" class="box menu music" (click)="soundToggle()">
+  <div [ngClass]="{'active':sound}" class="box menu music" (click)="soundToggleClick()">
     <div *ngIf="!sound">
       <div class="note off">🎵</div>
       <div>{{ 'MUSIC.OFF' | translate }}</div>

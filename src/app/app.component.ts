@@ -34,33 +34,18 @@ export class AppComponent {
 
     //audio
     this.musicAudio.load();
+    this.levelAudio.load();
+    this.hitAudio.load();
+    this.overAudio.load();
     this.musicAudio.loop = true;
     let sound: string | null = localStorage.getItem(this.soundLocalStorageKey);
-    if(sound != null){
+    if (sound != null) {
       this.sound = sound == "true";
     }
 
     // const element = document.querySelector('#title');
     // if (element)
     //   element.scrollIntoView();
-  }
-
-
-  symbols: string[] = this.startSymbolsPool;
-  symbolsAdditional: string[] = this.additionalSymbolsPool;
-
-
-  initGame() {
-    this.currentLevel = 0;
-    this.levels = [this.generateLevel(this.currentLevel + 1)];
-    this.levelTime = new Date();
-    this.timer = undefined;
-    this.gameOver = false;
-    this.points = 0;
-
-    //https://symbl.cc/en/collections/simvoli-vk/
-    this.symbols = this.startSymbolsPool;
-    this.symbolsAdditional = this.additionalSymbolsPool;
   }
 
   //translation
@@ -82,10 +67,13 @@ export class AppComponent {
   //audio
   //https://www.filippovicarelli.com/8bit-game-background-music
   musicAudio = new Audio("../assets/audio/sacrifice.wav");
+  levelAudio = new Audio("../assets/audio/explosion.wav");
+  hitAudio = new Audio("../assets/audio/hit.wav");
+  overAudio = new Audio("../assets/audio/game-over.mp3");
   sound: boolean = true;
   soundLocalStorageKey: string = "sound";
 
-  soundToggle() {
+  soundToggleClick() {
     if (this.sound)
       this.musicAudio.pause();
     else if (this.currentLevel > 0 && !this.gameOver)
@@ -95,6 +83,20 @@ export class AppComponent {
     localStorage.setItem(this.soundLocalStorageKey, String(this.sound));
   }
 
+  //game setup
+  initGame() {
+    this.currentLevel = 0;
+    this.levels = [this.generateLevel(this.currentLevel + 1)];
+    this.levelTime = new Date();
+    this.timer = undefined;
+    this.gameOver = false;
+    this.points = 0;
+    this.symbols = JSON.parse(JSON.stringify(this.startSymbolsPool));
+    this.symbolsAdditional = JSON.parse(JSON.stringify(this.additionalSymbolsPool));
+  }
+
+  symbols: string[] = JSON.parse(JSON.stringify(this.startSymbolsPool));
+  symbolsAdditional: string[] = JSON.parse(JSON.stringify(this.additionalSymbolsPool));
 
   randomSymbol(): number {
     return Math.floor(Math.random() * (this.symbols.length));
@@ -123,7 +125,6 @@ export class AppComponent {
   applyModuloColor(val: number): number {
     return (val % this.colors.length)
   }
-
 
   //tutorial
   showTutorial: boolean = false;
@@ -175,7 +176,6 @@ export class AppComponent {
     return true;
   }
 
-
   //levels
   currentLevel: number = 0;
   levels: Level[] = [this.generateLevel(this.currentLevel + 1)];
@@ -188,6 +188,7 @@ export class AppComponent {
   startGameClick() {
     if (this.tutorialComplete) {
       if (this.sound) {
+        this.levelAudio.play();
         this.musicAudio.play();
       }
 
@@ -228,6 +229,8 @@ export class AppComponent {
 
   timeIsUp() {
     this.gameOver = true;
+    if (this.sound)
+      this.overAudio.play();
     this.musicAudio.pause();
   }
 
@@ -318,6 +321,9 @@ export class AppComponent {
 
   boxClick(level: Level, box: Box) {
     if (level.num == this.currentLevel && !this.gameOver) {
+      if (this.sound)
+        this.hitAudio.play();
+
       box.symbol = this.applyModuloSymbol(box.symbol + 1);
       box.color = this.randomColorFromOrigin(box.color);
       if (level.num >= this.levelForRotation)
@@ -341,6 +347,9 @@ export class AppComponent {
     if (this.isLevelComplete(num)) {
       let level = this.getLevel(num);
       if (level) {
+        if (this.sound)
+          this.levelAudio.play();
+
         let timeRemaining: number = level.endTime.getTime() - new Date().getTime();
         if (timeRemaining > 0)
           level.points = Math.ceil(timeRemaining / 100); //10 points per second left
