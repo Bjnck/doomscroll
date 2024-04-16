@@ -21,5 +21,9 @@
     "POS_SYMBOL": "symbols can now change position",
     "SHARE": "Share your score",
     "SHARE_DESCRIPTION": "I reached level {{level}} in Doomscroll with {{points}} points. Can you beat my score ?"
+  },
+  "MUSIC": {
+    "ON": "Sound on",
+    "OFF": "Sound off"
   }
 }

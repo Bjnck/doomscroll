@@ -33,6 +33,13 @@
   font-size: 300%;
 }
 
+.box.menu.music .note {
+  font-size: 300%;
+}
+.box.menu.music .note.off {
+  text-decoration: line-through;
+}
+
 .box.text {
   border: 3px solid #5b5b5b;
 }

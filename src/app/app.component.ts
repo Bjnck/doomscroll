@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, HostListener} from '@angular/core';
 import {interval, map, Observable} from "rxjs";
 import {TranslateService} from "@ngx-translate/core";
 
@@ -10,40 +10,47 @@ import {TranslateService} from "@ngx-translate/core";
 export class AppComponent {
   title = "Dᛜᛜmᛇcrᛜᛂᛂ";
 
+  //game parameters
   boxPerLevel: number = 5;
   timePerLevel: number = 15;
   levelsForNewSymbols: number = 3;
   levelForRotation: number = 20;
-
-  translate: TranslateService;
-  language: string = "en";
-  supportedLanguages: string[] = ["en", "fr"];
-
   //https://symbl.cc/en/collections/simvoli-vk/
   startSymbolsPool = ["ᛄ", "ᛇ", "ᛂ"];
   additionalSymbolsPool = ["ᛚ", "ᛢ", "ᛮ", "ᛛ", "ᚾ", "ᛀ", "ᛁ", "ᛃ", "ᛑ", "ᛙ", "ᛜ"];
-
-  symbols: string[] = this.startSymbolsPool;
-  symbolsAdditional: string[] = this.additionalSymbolsPool;
-
   colors: string[] = ["green", "red", "blue", "purple", "cyan", "orange"];
 
   constructor(translate: TranslateService) {
+    //translation
     this.translate = translate;
-    let language: string = navigator.language.slice(0, 2);
+    let language: string | null = localStorage.getItem(this.languageLocalStorageKey);
+    if (language == null) {
+      language = navigator.language.slice(0, 2);
+    }
     if (this.supportedLanguages.findIndex(l => l === language) > 0) {
       this.language = language;
       translate.use(this.language);
     }
 
-    this.initGame();
+    //audio
+    this.musicAudio.load();
+    this.musicAudio.loop = true;
+    let sound: string | null = localStorage.getItem(this.soundLocalStorageKey);
+    if(sound != null){
+      this.sound = sound == "true";
+    }
 
-    const element = document.querySelector('#title');
-    if (element)
-      element.scrollIntoView();
+    // const element = document.querySelector('#title');
+    // if (element)
+    //   element.scrollIntoView();
   }
 
-  initGame(){
+
+  symbols: string[] = this.startSymbolsPool;
+  symbolsAdditional: string[] = this.additionalSymbolsPool;
+
+
+  initGame() {
     this.currentLevel = 0;
     this.levels = [this.generateLevel(this.currentLevel + 1)];
     this.levelTime = new Date();
@@ -56,14 +63,38 @@ export class AppComponent {
     this.symbolsAdditional = this.additionalSymbolsPool;
   }
 
+  //translation
+  translate: TranslateService;
+  language: string = "en";
+  supportedLanguages: string[] = ["en", "fr"];
+  languageLocalStorageKey: string = "language";
+
   languageClick() {
     let index = this.supportedLanguages.findIndex(l => l === this.language);
     let language = this.supportedLanguages.at((index + 1) % (this.supportedLanguages.length));
     if (language) {
       this.language = language;
       this.translate.use(this.language);
+      localStorage.setItem(this.languageLocalStorageKey, this.language);
     }
   }
+
+  //audio
+  //https://www.filippovicarelli.com/8bit-game-background-music
+  musicAudio = new Audio("../assets/audio/sacrifice.wav");
+  sound: boolean = true;
+  soundLocalStorageKey: string = "sound";
+
+  soundToggle() {
+    if (this.sound)
+      this.musicAudio.pause();
+    else if (this.currentLevel > 0 && !this.gameOver)
+      this.musicAudio.play();
+
+    this.sound = !this.sound;
+    localStorage.setItem(this.soundLocalStorageKey, String(this.sound));
+  }
+
 
   randomSymbol(): number {
     return Math.floor(Math.random() * (this.symbols.length));
@@ -115,6 +146,11 @@ export class AppComponent {
   tutorialToggleClick() {
     this.showTutorial = !this.showTutorial;
     this.tutorialComplete = !this.showTutorial;
+
+    if (this.showTutorial) {
+      this.initGame();
+      this.musicAudio.pause();
+    }
   }
 
   tutorialEndClick() {
@@ -151,6 +187,10 @@ export class AppComponent {
 
   startGameClick() {
     if (this.tutorialComplete) {
+      if (this.sound) {
+        this.musicAudio.play();
+      }
+
       this.fillLevel(this.currentLevel + 1);
       this.currentLevel++;
       this.startTimer();
@@ -188,6 +228,7 @@ export class AppComponent {
 
   timeIsUp() {
     this.gameOver = true;
+    this.musicAudio.pause();
   }
 
   getPoints(): number {
