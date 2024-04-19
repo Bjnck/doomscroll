@@ -7,32 +7,106 @@
 
   <div id="title">{{title}}</div>
 
-  <div class="box menu language" (click)="languageClick()">
-    <ng-container *ngIf="language == 'en'">
-      <div class="flag">🇬🇧</div>
-      <div>English</div>
-    </ng-container>
-    <ng-container *ngIf="language == 'fr'">
-      <div class="flag">🇫🇷</div>
-      <div>Français</div>
-    </ng-container>
+  <div [ngClass]="{'active':showSettings}" class="box menu settings" (click)="settingsToggleClick()">
+    <div class="text">
+      <div><img src="../assets/menu/settings.png" alt="Settings"></div>
+      <div>{{ 'SETTINGS' | translate }}</div>
+    </div>
   </div>
 
-  <div [ngClass]="{'active':sound}" class="box menu music" (click)="soundToggleClick()">
-    <div *ngIf="!sound">
-      <div class="note off">🎵</div>
-      <div>{{ 'MUSIC.OFF' | translate }}</div>
+  <ng-container *ngIf="showSettings">
+    <div class="box menu language" (click)="languageClick()">
+      <div *ngIf="language == 'en'">
+        <div><img src="../assets/menu/english.png" alt="English"></div>
+        <div>English</div>
+      </div>
+      <div *ngIf="language == 'fr'">
+        <div><img src="../assets/menu/french.png" alt="French"></div>
+        <div>Français</div>
+      </div>
     </div>
-    <div *ngIf="sound">
-      <div class="note">🎵</div>
-      <div>{{ 'MUSIC.ON' | translate }}</div>
+
+    <div [ngClass]="{'active':music}" class="box menu audio" (click)="musicToggleClick()">
+      <div>
+        <div *ngIf="!music" class="text">
+          <div><img src="../assets/menu/music-off.png" alt="Music Off"></div>
+        </div>
+        <div *ngIf="music" class="text">
+          <div><img src="../assets/menu/music.png" alt="Music On"></div>
+        </div>
+        <div>{{ 'MUSIC' | translate }}</div>
+      </div>
+    </div>
+    <div [ngClass]="{'active':sound}" class="box menu audio" (click)="soundToggleClick()">
+      <div>
+        <div *ngIf="!sound" class="text">
+          <div><img src="../assets/menu/sound-off.png" alt="Sound Off"></div>
+        </div>
+        <div *ngIf="sound" class="text">
+          <div><img src="../assets/menu/sound.png" alt="Sound On"></div>
+        </div>
+        <div>{{ 'SOUND' | translate }}</div>
+      </div>
+    </div>
+
+    <div *ngIf="displayName == null" class="box menu account" (click)="googleAuthClick(false)">
+      <div>
+        <div class="item">{{ 'ACCOUNT.CONNECT' | translate }}</div>
+        <div><img src="../assets/menu/google.png" alt="Google"></div>
+      </div>
+    </div>
+
+    <div *ngIf="displayName != null" class="box menu account inactive">
+      <div>
+        <div class="item">{{ 'ACCOUNT.CONNECTED' | translate }}</div>
+        <div>{{displayName}}</div>
+      </div>
+    </div>
+
+    <a href="./static/privacy.html" target="_blank">
+      <div class="box menu privacy">
+        <div class="item">{{ 'PRIVACY' | translate }}</div>
+      </div>
+    </a>
+  </ng-container>
+
+  <!-- leaderboard -->
+  <div [ngClass]="{'active':showLeader}" class="box menu leader" (click)="leaderToggleClick()">
+    <div class="text">
+      <div class="cup">🏆</div>
+      <div>{{ 'LEADER.MENU' | translate }}</div>
     </div>
   </div>
+
+  <ng-container *ngIf="showLeader">
+    <div class="box leader personal">
+      <div>
+        <div class="title">{{ 'LEADER.PERSONAL' | translate }}</div>
+        <div class="item">{{ 'GAME.LEVEL' | translate }} {{getBestLevel()}}</div>
+        <div class="item">{{getBestPoints()}} {{ 'GAME.POINTS' | translate }}</div>
+        <div class="item">{{ 'LEADER.RANK' | translate }} -</div>
+      </div>
+    </div>
+
+    <div class="box text leader top">
+      Top 10
+    </div>
+    <div class="box text leader top">
+      <div>
+        <div class="rank">1</div>
+        <div class="item">Basile</div>
+        <div class="item">{{ 'GAME.LEVEL' | translate }} 2</div>
+        <div class="item">2530 {{ 'GAME.POINTS' | translate }}</div>
+      </div>
+    </div>
+  </ng-container>
 
   <!--  tutorial -->
   <div [ngClass]="{'active':showTutorial}" class="box menu tutorial" (click)="tutorialToggleClick()">
-    <ng-container *ngIf="!showTutorial">{{ 'TUTORIAL.SHOW' | translate }}</ng-container>
-    <ng-container *ngIf="showTutorial">{{ 'TUTORIAL.HIDE' | translate }}</ng-container>
+    <div class="text">
+      <div><img src="../assets/menu/tutorial.png" alt="Tutorial"></div>
+      <div>{{ 'TUTORIAL.MENU' | translate }}</div>
+    </div>
   </div>
 
   <ng-container *ngIf="showTutorial">
@@ -107,7 +181,8 @@
       <div [ngClass]="tutorialComplete ? '' : 'inactive'"
            class="box level start"
            (click)="startGameClick()">
-        {{ 'GAME.START' | translate }}
+        <div><img src="../assets/menu/start.png" alt="Start"></div>
+        <div>{{ 'GAME.START' | translate }}</div>
       </div>
     </ng-container>
     <ng-container *ngSwitchCase="2">
@@ -161,8 +236,10 @@
 
       <ng-container *ngSwitchCase="2">
         <div class="box level complete">
-          <div class="gameover">{{ 'GAME.GAME_OVER' | translate }}</div>
-          <div class="goal">{{ 'GAME.LEVEL' | translate }} {{level.num}}</div>
+          <div *ngIf="getPoints() <= previousRecord"><img src="../assets/menu/skull-red.png" alt="Game Over"></div>
+          <div *ngIf="getPoints() > previousRecord"><img src="../assets/menu/skull-green.png" alt="Game Over"></div>
+          <div class="record" *ngIf="getPoints() > previousRecord">{{ 'LEADER.NEW' | translate }}</div>
+          <div>{{ 'GAME.LEVEL' | translate }} {{level.num}}</div>
           <div>{{getPoints()}} {{ 'GAME.POINTS' | translate }}</div>
         </div>
 
@@ -177,8 +254,11 @@
           </share-buttons>
         </div>
 
-        <div class="box level restart" (click)="restartGameClick()">
-          {{ 'GAME.RESTART' | translate }}
+        <div class="box level start" (click)="restartGameClick()">
+          <div>
+            <div><img src="../assets/menu/restart.png" alt="Restart"></div>
+            <div>{{ 'GAME.RESTART' | translate }}</div>
+          </div>
         </div>
       </ng-container>
 

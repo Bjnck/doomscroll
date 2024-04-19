@@ -23,7 +23,8 @@
             "assets": [
               "src/assets",
               "src/manifest.webmanifest",
-              "src/manifest.webmanifest"
+              "src/manifest.webmanifest",
+              "src/static/privacy.html"
             ],
             "styles": [
               "src/styles.css",

@@ -1,10 +1,22 @@
 {
   "scores": {
-    "user-uuid": {
-      "name": "BJO",
-      "id": "1",
-      "level": "20",
-      "points": "2180"
+    "uuid": {
+      "name": "name",
+      "level": 20,
+      "points": 1780,
+      "date": "timestamp"
+    }
+  },
+
+  "users": {
+    "auth-uid": {
+      "name": "name",
+      "score": {
+        "level": 20,
+        "points": 1780,
+        "date": "timestamp",
+        "id": "uuid"
+      }
     }
   }
 }

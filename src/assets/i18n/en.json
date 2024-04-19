@@ -1,7 +1,6 @@
 {
   "TUTORIAL": {
-    "SHOW": "How to play ?",
-    "HIDE": "Hide the tutorial",
+    "MENU": "How to play ?",
     "INSTRUCTION_1": "A new model is selected for each level",
     "INSTRUCTION_2": "Tap to change the symbols until they all match the model",
     "INSTRUCTION_3": "Colors don't matter",
@@ -22,8 +21,18 @@
     "SHARE": "Share your score",
     "SHARE_DESCRIPTION": "I reached level {{level}} in Doomscroll with {{points}} points. Can you beat my score ?"
   },
-  "MUSIC": {
-    "ON": "Sound on",
-    "OFF": "Sound off"
-  }
+  "MUSIC": "Music",
+  "SOUND": "Sound",
+  "SETTINGS": "Settings",
+  "LEADER": {
+    "MENU": "Ranking",
+    "PERSONAL": "Best score",
+    "RANK": "Rank",
+    "NEW": "New record"
+  },
+  "ACCOUNT": {
+    "CONNECT": "Connect with",
+    "CONNECTED": "Connected"
+  },
+  "PRIVACY": "Privacy policy"
 }

@@ -1,7 +1,6 @@
 {
   "TUTORIAL": {
-    "SHOW": "Comment jouer ?",
-    "HIDE": "Masquer le tutoriel",
+    "MENU": "Comment jouer ?",
     "INSTRUCTION_1": "Un nouveau modèle est sélectionné à chaque niveau",
     "INSTRUCTION_2": "Clique pour changer le symbole jusqu'à ce que tous les symboles correspondent au modèle",
     "INSTRUCTION_3": "Les couleurs n'ont pas d'importance",
@@ -12,8 +11,8 @@
     "CONTINUE": "Tu peux maintenant démarrer le jeux"
   },
   "GAME": {
-    "START": "START",
-    "RESTART": "RESTART",
+    "START": "COMMENCER",
+    "RESTART": "RECOMMENCER",
     "GAME_OVER": "Game Over",
     "LEVEL": "Niveau",
     "POINTS": "points",
@@ -22,8 +21,18 @@
     "SHARE": "Partage ton score",
     "SHARE_DESCRIPTION": "J'ai atteint le niveau {{level}} à Doomscroll avec {{points}} points. Peux tu battre mon score ?"
   },
-  "MUSIC": {
-    "ON": "Son activé",
-    "OFF": "Son désactivé"
-  }
+  "MUSIC": "Musique",
+  "SOUND": "Son",
+  "SETTINGS": "Paramètres",
+  "LEADER": {
+    "MENU": "Classement",
+    "PERSONAL": "Meilleur score",
+    "RANK": "Rang",
+    "NEW": "Nouveau record"
+  },
+  "ACCOUNT": {
+    "CONNECT": "Se connecter avec",
+    "CONNECTED": "Connecté"
+  },
+  "PRIVACY": "Politique vie privée"
 }

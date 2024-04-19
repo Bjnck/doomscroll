@@ -1,7 +1,7 @@
 #title {
-  font-size: 200%;
+  font-size: 300%;
   margin-bottom: 50px;
-  margin-top: 30px;
+  margin-top: 40px;
 }
 
 .box {
@@ -18,6 +18,7 @@
   justify-content: center;
 }
 
+/*settings*/
 .box.menu {
   background-color: #383838;
   border: 5px outset #5b5b5b;
@@ -25,31 +26,94 @@
 .box.menu.active {
   border: 5px inset #5b5b5b;
 }
-
-.box.menu.language {
-  flex-direction: column;
-}
-.box.menu.language .flag {
-  font-size: 300%;
+.box.menu.active .text{
+  opacity: 0.7;
 }
 
-.box.menu.music .note {
-  font-size: 300%;
+.box.menu.settings div {
+  width: 100%
 }
-.box.menu.music .note.off {
-  text-decoration: line-through;
+.box.menu.settings img {
+  width: 15%;
 }
 
+.box.menu.language div {
+  width: 100%
+}
+.box.menu.language img {
+  width: 20%;
+}
+
+.box.menu.audio div {
+  width: 100%
+}
+.box.menu.audio img {
+  width: 20%;
+}
+
+.box.menu.account.inactive {
+  border: 5px solid #5b5b5b;
+}
+.box.menu.account .item {
+   margin-bottom: 20px;
+ }
+.box.menu.account div {
+  width: 100%
+}
+.box.menu.account img {
+  width: 30%
+}
+
+.box.menu.privacy {
+  color: white;
+}
+a {
+  text-decoration: none;
+}
+
+.box.menu.tutorial div {
+  width: 100%
+}
+.box.menu.tutorial img {
+  width: 20%
+}
+
+
+
+/*leaderboard*/
+.box.menu.leader .cup {
+  font-size: 200%;
+  margin-bottom: 5px;
+}
+
+.box.leader.personal{
+  background-color: goldenrod;
+  border: 5px solid #ffbf24;
+}
+.box.leader.personal .title{
+  margin-bottom: 10px;
+}
+
+.box.leader.top .rank{
+  margin-bottom: 10px;
+}
+
+/*tutorial*/
+.arrow {
+  font-size: 170%;
+}
 .box.text {
   border: 3px solid #5b5b5b;
 }
 
-.arrow {
-  font-size: 170%;
-}
-
+/*level*/
 .box.symbol {
   font-size: 400%;
+  background-blend-mode: soft-light;
+  background-image: url("../assets/background/symbol.png");
+  background-size: auto 80%;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .box.symbol .rotate45 {
@@ -77,6 +141,12 @@
 .box.symbol.model {
   background-color: goldenrod;
   border: 5px solid #ffbf24;
+  background-blend-mode: soft-light;
+  background-image: url("../assets/background/model.png");
+  /*background-size: auto 160%;*/
+  background-size: auto 80%;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .box.symbol.inactive {
@@ -85,6 +155,7 @@
 
 .box.symbol.empty {
   background-color: #212121;
+  background-image: none;
   border: 3px solid #5b5b5b;
 }
 
@@ -103,11 +174,11 @@
   border: 5px solid #008d00;
 }
 .box.symbol.blue {
-  background-color: darkblue;
-  border: 5px outset #0e0e5d;
+  background-color: #2b2b98;
+  border: 5px outset #404094;
  }
 .box.symbol.blue.inactive {
-  border: 5px solid #0e0e5d;
+  border: 5px solid #404094;
 }
 .box.symbol.purple {
   background-color: rebeccapurple;
@@ -117,11 +188,11 @@
   border: 5px solid #763eb2;
 }
 .box.symbol.orange {
-  background-color: orangered;
-  border: 5px outset #ff6c34;
+  background-color: #d03700;
+  border: 5px outset #de5d2a;
 }
 .box.symbol.orange.inactive {
-  border: 5px solid #ff6c34;
+  border: 5px solid #de5d2a;
 }
 .box.symbol.cyan {
   background-color: darkcyan;
@@ -140,19 +211,31 @@
 .box.level.inactive {
   background-color: #9d740a;
   border: 5px solid #6e5207;
-  color: rgba(255, 255, 255, 0.7);
+  opacity: 0.7;
 }
 .box.level.complete {
   background-color: goldenrod;
   border: 5px solid #ffbf24;
 }
+.box.level.complete div {
+  width: 100%
+}
+.box.level.complete img {
+  width: 15%;
+  margin-bottom: 5px;
+}
+
 .box.level.start {
   font-weight: bold;
 }
-.box.level.timer {
-  font-weight: bold;
+.box.level.start div {
+  width: 100%
 }
-.box.level.restart {
+.box.level.start img {
+  width: 20%
+}
+
+.box.level.timer {
   font-weight: bold;
 }
 
@@ -163,16 +246,13 @@
 .box.level .add {
   font-size: 150%;
 }
-.box.level .time {
-  font-size: 100%;
-  color: forestgreen;
-}
-.box.level .gameover {
-  font-size: 175%;
-  color: red;
-  margin-bottom: 5px;
+
+.box.level .record {
+  color: #5e9d47;
+  margin-bottom: 3px;
+  font-weight: bold;
 }
 .box.level .share {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 

@@ -12,7 +12,7 @@ html{
   font-family: roboto-regular, noto-runnic;
   color:white;
   background-color: #212121;
-  max-width: 800px;
+  max-width: 450px;
   min-width: 300px;
 
   -webkit-user-select: none; /* Safari */

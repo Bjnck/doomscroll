@@ -1,6 +1,11 @@
-import {Component, HostListener} from '@angular/core';
+import {Component} from '@angular/core';
 import {interval, map, Observable} from "rxjs";
 import {TranslateService} from "@ngx-translate/core";
+import {getDatabase, ref, set, orderByChild, query, get, update} from "firebase/database";
+import {getAuth, signInAnonymously, onAuthStateChanged} from "firebase/auth";
+import {v4 as uuidv4} from 'uuid';
+import {Auth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, linkWithRedirect} from "@firebase/auth";
+import {formatDate} from "@angular/common";
 
 @Component({
   selector: 'app-root',
@@ -21,6 +26,33 @@ export class AppComponent {
   colors: string[] = ["green", "red", "blue", "purple", "cyan", "orange"];
 
   constructor(translate: TranslateService) {
+    //auth
+    this.auth.languageCode = this.language;
+    onAuthStateChanged(this.auth, (user) => {
+      if (user) {
+        console.log(user)
+        if (!user.isAnonymous) {
+          if (user.displayName != null)
+            this.setDisplayName(user.displayName);
+          else {
+            let displayName: string | null = user.providerData[0].displayName;
+            if (displayName != null)
+              this.setDisplayName(displayName);
+          }
+        }
+
+        this.getScore();
+      }
+    });
+    //this is to handle link to existing account
+    getRedirectResult(this.auth)
+      .catch((error) => {
+        if(error.toString().includes("auth/credential-already-in-use")){
+          localStorage.removeItem(this.scoreIdLocalStorageKey);
+          this.googleAuthClick(true);
+        }
+      });
+
     //translation
     this.translate = translate;
     let language: string | null = localStorage.getItem(this.languageLocalStorageKey);
@@ -30,6 +62,7 @@ export class AppComponent {
     if (this.supportedLanguages.findIndex(l => l === language) > 0) {
       this.language = language;
       translate.use(this.language);
+      this.auth.languageCode = this.language;
     }
 
     //audio
@@ -38,14 +71,143 @@ export class AppComponent {
     this.hitAudio.load();
     this.overAudio.load();
     this.musicAudio.loop = true;
+    let music: string | null = localStorage.getItem(this.musicLocalStorageKey);
+    if (music != null)
+      this.music = music == "true";
     let sound: string | null = localStorage.getItem(this.soundLocalStorageKey);
-    if (sound != null) {
+    if (sound != null)
       this.sound = sound == "true";
-    }
+  }
 
-    // const element = document.querySelector('#title');
-    // if (element)
-    //   element.scrollIntoView();
+  //auth
+  auth: Auth = getAuth();
+  displayName: string | null = null;
+
+  setDisplayName(displayName: string) {
+    let indexSpace = displayName.indexOf(" ");
+    if (indexSpace > 0)
+      this.displayName = displayName.slice(0, indexSpace + 2) + ".";
+    else
+      this.displayName = displayName;
+  }
+
+  anonymousUser() {
+    if (this.auth.currentUser == null) {
+      signInAnonymously(this.auth)
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  }
+
+  googleAuthClick(forceRedirect: boolean) {
+    const provider = new GoogleAuthProvider();
+
+    if (forceRedirect || this.auth.currentUser == null)
+      signInWithRedirect(this.auth, provider);
+
+    else if (this.auth.currentUser?.isAnonymous)
+      linkWithRedirect(this.auth.currentUser, provider)
+        .catch((result) => console.log(result));
+  }
+
+  //score
+  db = getDatabase();
+  scoreIdLocalStorageKey: string = "score_id";
+  recordLevelStorageKey: string = "record_level";
+  recordPointsStorageKey: string = "record_points";
+  rankingStorageKey: string = "ranking";
+
+  getScore() {
+    let scoreId: string | null = localStorage.getItem(this.scoreIdLocalStorageKey);
+    if (scoreId == null) {
+      get(ref(this.db, 'users/' + this.auth.currentUser?.uid))
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            localStorage.setItem(this.scoreIdLocalStorageKey, snapshot.val().score.id);
+            localStorage.setItem(this.recordPointsStorageKey, snapshot.val().score.points);
+            localStorage.setItem(this.recordLevelStorageKey, snapshot.val().score.level);
+
+            if (this.displayName != null && snapshot.val().name != this.displayName) {
+              update(ref(this.db, 'users/' + this.auth.currentUser?.uid),
+                {name: this.displayName})
+                .catch((error) => {
+                  console.error(error);
+                });
+            }
+
+          } else {
+            console.log("No data available");
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+  }
+
+  getBestLevel(): number {
+    let recordStorage: string | null = localStorage.getItem(this.recordLevelStorageKey);
+    let record: number = 0;
+    if (recordStorage != null)
+      record = +recordStorage;
+
+    return record;
+  }
+
+  getBestPoints(): number {
+    let recordStorage: string | null = localStorage.getItem(this.recordPointsStorageKey);
+    let record: number = 0;
+    if (recordStorage != null)
+      record = +recordStorage;
+
+    return record;
+  }
+
+  persistScore(level: number, points: number) {
+    let recordPointsStorage: string | null = localStorage.getItem(this.recordPointsStorageKey);
+    let recordPoints: number = 0;
+    if (recordPointsStorage != null)
+      recordPoints = +recordPointsStorage;
+
+    if (points > recordPoints) {
+      localStorage.setItem(this.recordPointsStorageKey, "" + points);
+      localStorage.setItem(this.recordLevelStorageKey, "" + level);
+
+      let scoreId: string | null = localStorage.getItem(this.scoreIdLocalStorageKey);
+      if (scoreId == null) {
+        scoreId = uuidv4();
+        localStorage.setItem(this.scoreIdLocalStorageKey, scoreId);
+      }
+
+      set(ref(this.db, 'users/' + this.auth.currentUser?.uid), {
+        name: "Anonymous",
+        score: {
+          level: level,
+          points: points,
+          date: formatDate(Date.now(), 'yyyy-MM-dd', "en-US"),
+          id: scoreId,
+        }
+      }).catch((error) => {
+        console.error(error);
+      });
+    }
+  }
+
+  //leaderboard
+  showLeader: boolean = false;
+
+  leaderToggleClick() {
+    //todo if true then first calculate rank and get top 10
+    // then display
+    this.showLeader = !this.showLeader;
+  }
+
+  //settings
+  showSettings: boolean = false;
+
+  settingsToggleClick() {
+    this.showSettings = !this.showSettings;
   }
 
   //translation
@@ -61,8 +223,41 @@ export class AppComponent {
       this.language = language;
       this.translate.use(this.language);
       localStorage.setItem(this.languageLocalStorageKey, this.language);
+      this.auth.languageCode = this.language;
     }
   }
+
+  //
+  // list() {
+  //   const auth = getAuth();
+  //
+  //   signInAnonymously(auth)
+  //     .then(() => {
+  //       // Signed in..
+  //     })
+  //     .catch((error) => {
+  //       const errorCode = error.code;
+  //       const errorMessage = error.message;
+  //       console.log(errorMessage)
+  //       // ...
+  //     });
+  //
+  //
+  //   const db = getDatabase();
+  //   const list = query(ref(db, 'scores/'), orderByChild('points'));
+  //   console.log(list.ref.toJSON())
+  //
+  //   get(list).then((snapshot) => {
+  //     if (snapshot.exists()) {
+  //       console.log(snapshot.val());
+  //     } else {
+  //       console.log("No data available");
+  //     }
+  //   }).catch((error) => {
+  //     console.error(error);
+  //   });
+  // }
+
 
   //audio
   //https://www.filippovicarelli.com/8bit-game-background-music
@@ -70,15 +265,22 @@ export class AppComponent {
   levelAudio = new Audio("../assets/audio/explosion.wav");
   hitAudio = new Audio("../assets/audio/hit.wav");
   overAudio = new Audio("../assets/audio/game-over.mp3");
+  music: boolean = true;
+  musicLocalStorageKey: string = "music";
   sound: boolean = true;
   soundLocalStorageKey: string = "sound";
 
-  soundToggleClick() {
-    if (this.sound)
+  musicToggleClick() {
+    if (this.music)
       this.musicAudio.pause();
     else if (this.currentLevel > 0 && !this.gameOver)
       this.musicAudio.play();
 
+    this.music = !this.music;
+    localStorage.setItem(this.musicLocalStorageKey, String(this.music));
+  }
+
+  soundToggleClick() {
     this.sound = !this.sound;
     localStorage.setItem(this.soundLocalStorageKey, String(this.sound));
   }
@@ -91,6 +293,7 @@ export class AppComponent {
     this.timer = undefined;
     this.gameOver = false;
     this.points = 0;
+    this.previousRecord = this.getBestPoints();
     this.symbols = JSON.parse(JSON.stringify(this.startSymbolsPool));
     this.symbolsAdditional = JSON.parse(JSON.stringify(this.additionalSymbolsPool));
   }
@@ -184,24 +387,30 @@ export class AppComponent {
   timer: Observable<number> | undefined;
   gameOver: boolean = false;
   points: number = 0;
+  previousRecord: number = this.getBestPoints();
 
   startGameClick() {
     if (this.tutorialComplete) {
-      if (this.sound) {
+      if (this.sound)
         this.levelAudio.play();
+      if (this.music)
         this.musicAudio.play();
-      }
 
       this.fillLevel(this.currentLevel + 1);
       this.currentLevel++;
       this.startTimer();
+
+      this.anonymousUser();
     }
   }
 
   restartGameClick() {
     this.initGame();
 
-    const element = document.querySelector('#start');
+    this.showTutorial = false;
+    this.showSettings = false;
+
+    const element = document.querySelector('#title');
     if (element)
       element.scrollIntoView();
   }
@@ -232,14 +441,17 @@ export class AppComponent {
     if (this.sound)
       this.overAudio.play();
     this.musicAudio.pause();
+
+    this.persistScore(this.currentLevel, this.getPoints());
   }
 
   getPoints(): number {
-    let points = 100 * (this.currentLevel - 1);
+    let points = 150 * (this.currentLevel - 1);
     for (let i = 0; i < this.currentLevel; i++) {
       let level = this.levels[i];
       points += level.points;
     }
+
     return points;
   }
 
