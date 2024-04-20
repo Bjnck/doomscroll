@@ -78,24 +78,41 @@ a {
   width: 20%
 }
 
-
-
-/*leaderboard*/
-.box.menu.leader .cup {
-  font-size: 200%;
-  margin-bottom: 5px;
+/*ranking*/
+.box.menu.ranking div {
+  width: 100%
+}
+.box.menu.ranking img {
+  width: 20%
 }
 
-.box.leader.personal{
-  background-color: goldenrod;
-  border: 5px solid #ffbf24;
+.box.ranking.personal{
+  background-color: #383838;
+  border: 5px solid #5b5b5b;
 }
-.box.leader.personal .title{
+.box.ranking.personal .title{
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+.box.ranking.personal .item .medal {
+  vertical-align: middle;
+}
+.box.ranking.personal .item .medal img {
+  width: 20%;
+}
+
+.box.ranking.top.title {
+  font-weight: bold;
+}
+.box.ranking.top .item.name {
   margin-bottom: 10px;
 }
-
-.box.leader.top .rank{
+.box.ranking.top .rank{
   margin-bottom: 10px;
+  font-weight: bold;
+}
+.box.ranking.top .cup img{
+  width: 40%;
 }
 
 /*tutorial*/
@@ -238,6 +255,10 @@ a {
 .box.level.timer {
   font-weight: bold;
 }
+.box.level.img {
+  width: 20px;
+  margin-bottom: 5px;
+}
 
 .box.level .goal {
   font-size: 150%;
@@ -252,7 +273,11 @@ a {
   margin-bottom: 3px;
   font-weight: bold;
 }
-.box.level .share {
+.box.level.share {
+  background-color: #383838;
+  border: 5px solid #5b5b5b;
+}
+.box.level.share .share {
   margin-bottom: 15px;
 }
 

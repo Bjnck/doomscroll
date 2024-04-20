@@ -2,9 +2,10 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { AppModule } from './app/app.module';
 import { initializeApp } from "firebase/app";
-import { getDatabase } from "firebase/database";
+// import { getDatabase } from "firebase/database";
 import { getAuth } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
+import { getFirestore } from 'firebase/firestore/lite';
 
 platformBrowserDynamic().bootstrapModule(AppModule)
   .catch(err => console.error(err));
@@ -25,5 +26,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-const database = getDatabase(app);
+// const database = getDatabase(app);
+const database = getFirestore(app);
 const auth = getAuth(app);

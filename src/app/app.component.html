@@ -5,6 +5,9 @@
   [infiniteScrollThrottle]="50"
   (scrolled)="onScroll()">
 
+  <!--load images-->
+  <img hidden *ngFor="let img of images;" [src]="img" alt="preload" />
+
   <div id="title">{{title}}</div>
 
   <div [ngClass]="{'active':showSettings}" class="box menu settings" (click)="settingsToggleClick()">
@@ -49,10 +52,14 @@
       </div>
     </div>
 
+    <div *ngIf="displayName == null" class="box text">
+      {{ 'ACCOUNT.EXPLAIN' | translate }}
+    </div>
+
     <div *ngIf="displayName == null" class="box menu account" (click)="googleAuthClick(false)">
       <div>
         <div class="item">{{ 'ACCOUNT.CONNECT' | translate }}</div>
-        <div><img src="../assets/menu/google.png" alt="Google"></div>
+        <div><img src="../assets/menu/google.webp" alt="Google"></div>
       </div>
     </div>
 
@@ -70,33 +77,44 @@
     </a>
   </ng-container>
 
-  <!-- leaderboard -->
-  <div [ngClass]="{'active':showLeader}" class="box menu leader" (click)="leaderToggleClick()">
+  <!-- ranking -->
+  <div [ngClass]="{'active':showRanking}" class="box menu ranking" (click)="rankingToggleClick()">
     <div class="text">
-      <div class="cup">🏆</div>
+      <div><img src="../assets/menu/ranking.png" alt="Ranking"></div>
       <div>{{ 'LEADER.MENU' | translate }}</div>
     </div>
   </div>
 
-  <ng-container *ngIf="showLeader">
-    <div class="box leader personal">
+  <ng-container *ngIf="showRanking">
+    <div class="box ranking personal">
       <div>
         <div class="title">{{ 'LEADER.PERSONAL' | translate }}</div>
+        <div *ngIf="getRanking() <= 0" class="item">
+          {{ 'LEADER.RANK' | translate }} -
+        </div>
+        <div *ngIf="getRanking() > 0" class="item">
+          <span *ngIf="getRanking() <= 3" class="medal"><img src="../assets/menu/medal-gold.png" alt="Gold"></span>
+          <span *ngIf="getRanking() <= 10 && getRanking() > 3" class="medal"><img src="../assets/menu/medal-silver.png" alt="Silver"></span>
+          <span *ngIf="getRanking() <= 100 && getRanking() > 10" class="medal"><img src="../assets/menu/medal-bronze.png" alt="Bronze"></span>
+          {{ 'LEADER.RANK' | translate }} {{getRanking()}}
+        </div>
         <div class="item">{{ 'GAME.LEVEL' | translate }} {{getBestLevel()}}</div>
         <div class="item">{{getBestPoints()}} {{ 'GAME.POINTS' | translate }}</div>
-        <div class="item">{{ 'LEADER.RANK' | translate }} -</div>
       </div>
     </div>
 
-    <div class="box text leader top">
-      Top 10
+    <div class="box text ranking top title">
+      - Top 10 -
     </div>
-    <div class="box text leader top">
+    <div class="box text ranking top"  *ngFor="let rank of getTop10()">
       <div>
-        <div class="rank">1</div>
-        <div class="item">Basile</div>
-        <div class="item">{{ 'GAME.LEVEL' | translate }} 2</div>
-        <div class="item">2530 {{ 'GAME.POINTS' | translate }}</div>
+        <div *ngIf="rank.rank == 1" class="cup"><img src="../assets/menu/rank-1.png" alt="1"></div>
+        <div *ngIf="rank.rank == 2" class="cup"><img src="../assets/menu/rank-2.png" alt="2"></div>
+        <div *ngIf="rank.rank == 3" class="cup"><img src="../assets/menu/rank-3.png" alt="3"></div>
+        <div *ngIf="rank.rank > 3" class="rank">{{rank.rank}}</div>
+        <div class="item name">{{rank.name}}</div>
+        <div class="item">{{ 'GAME.LEVEL' | translate }} {{rank.level}}</div>
+        <div class="item">{{rank.points}} {{ 'GAME.POINTS' | translate }}</div>
       </div>
     </div>
   </ng-container>
@@ -243,7 +261,7 @@
           <div>{{getPoints()}} {{ 'GAME.POINTS' | translate }}</div>
         </div>
 
-        <div class="box level complete">
+        <div class="box level share">
           <div class="share">{{ 'GAME.SHARE' | translate }}</div>
           <share-buttons [theme]="'modern-dark'"
                          [include]="['whatsapp', 'sms']"
@@ -254,7 +272,7 @@
           </share-buttons>
         </div>
 
-        <div class="box level start" (click)="restartGameClick()">
+        <div class="box level start" (click)="refresh()">
           <div>
             <div><img src="../assets/menu/restart.png" alt="Restart"></div>
             <div>{{ 'GAME.RESTART' | translate }}</div>
@@ -265,7 +283,8 @@
       <ng-container *ngSwitchCase="3">
         <div [ngClass]="isLevelComplete(level.num) ? '' : 'inactive'" class="box level timer"
              (click)="levelEndClick(level.num)">
-          ◷ {{timer | async | date: 'ss.SS'}}
+          <div><img src="../assets/menu/timer.png" alt="Timer"></div>
+          <div>{{timer | async | date: 'ss.SS'}}</div>
         </div>
       </ng-container>
 

@@ -26,11 +26,12 @@
   "SETTINGS": "Settings",
   "LEADER": {
     "MENU": "Ranking",
-    "PERSONAL": "Best score",
+    "PERSONAL": "Your best score",
     "RANK": "Rank",
-    "NEW": "New record"
+    "NEW": "New high score"
   },
   "ACCOUNT": {
+    "EXPLAIN": "Connect to save your score and add your name to the ranking",
     "CONNECT": "Connect with",
     "CONNECTED": "Connected"
   },

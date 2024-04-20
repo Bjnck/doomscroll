@@ -1,11 +1,24 @@
 import {Component} from '@angular/core';
 import {interval, map, Observable} from "rxjs";
 import {TranslateService} from "@ngx-translate/core";
-import {getDatabase, ref, set, orderByChild, query, get, update} from "firebase/database";
 import {getAuth, signInAnonymously, onAuthStateChanged} from "firebase/auth";
-import {v4 as uuidv4} from 'uuid';
 import {Auth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, linkWithRedirect} from "@firebase/auth";
-import {formatDate} from "@angular/common";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  UpdateData,
+  DocumentData,
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  getDocs,
+  getCountFromServer
+} from "firebase/firestore";
 
 @Component({
   selector: 'app-root',
@@ -25,6 +38,32 @@ export class AppComponent {
   additionalSymbolsPool = ["ᛚ", "ᛢ", "ᛮ", "ᛛ", "ᚾ", "ᛀ", "ᛁ", "ᛃ", "ᛑ", "ᛙ", "ᛜ"];
   colors: string[] = ["green", "red", "blue", "purple", "cyan", "orange"];
 
+  //pre-load images
+  images = [
+    "../assets/background/model.png",
+    "../assets/background/symbol.png",
+    "../assets/menu/english.png",
+    "../assets/menu/french.png",
+    "../assets/menu/google.webp",
+    "../assets/menu/music.png",
+    "../assets/menu/music-off.png",
+    "../assets/menu/sound.png",
+    "../assets/menu/sound-off.png",
+    "../assets/menu/tutorial.png",
+    "../assets/menu/start.png",
+    "../assets/menu/restart.png",
+    "../assets/menu/skull-red.png",
+    "../assets/menu/skull-green.png",
+    "../assets/menu/settings.png",
+    "../assets/menu/timer.png",
+    "../assets/menu/ranking.png",
+    "../assets/menu/medal-gold.png",
+    "../assets/menu/medal-silver.png",
+    "../assets/menu/medal-bronze.png",
+    "../assets/menu/rank-1.png",
+    "../assets/menu/rank-2.png",
+    "../assets/menu/rank-3.png"];
+
   constructor(translate: TranslateService) {
     //auth
     this.auth.languageCode = this.language;
@@ -41,14 +80,16 @@ export class AppComponent {
           }
         }
 
-        this.getScore();
+        this.getScore(user.uid);
       }
     });
     //this is to handle link to existing account
     getRedirectResult(this.auth)
       .catch((error) => {
-        if(error.toString().includes("auth/credential-already-in-use")){
-          localStorage.removeItem(this.scoreIdLocalStorageKey);
+        if (error.toString().includes("auth/credential-already-in-use")) {
+          localStorage.removeItem(this.recordPointsStorageKey);
+          localStorage.removeItem(this.recordLevelStorageKey);
+          localStorage.removeItem(this.recordDateStorageKey);
           this.googleAuthClick(true);
         }
       });
@@ -112,30 +153,32 @@ export class AppComponent {
   }
 
   //score
-  db = getDatabase();
-  scoreIdLocalStorageKey: string = "score_id";
+  db = getFirestore();
   recordLevelStorageKey: string = "record_level";
   recordPointsStorageKey: string = "record_points";
+  recordDateStorageKey: string = "record_date";
   rankingStorageKey: string = "ranking";
+  top10StorageKey: string = "top10";
 
-  getScore() {
-    let scoreId: string | null = localStorage.getItem(this.scoreIdLocalStorageKey);
-    if (scoreId == null) {
-      get(ref(this.db, 'users/' + this.auth.currentUser?.uid))
+  getScore(userId: string) {
+    let points: string | null = localStorage.getItem(this.recordPointsStorageKey);
+    if (points == null) {
+
+      let ref = doc(this.db, "users", userId);
+      getDoc(ref)
         .then((snapshot) => {
           if (snapshot.exists()) {
-            localStorage.setItem(this.scoreIdLocalStorageKey, snapshot.val().score.id);
-            localStorage.setItem(this.recordPointsStorageKey, snapshot.val().score.points);
-            localStorage.setItem(this.recordLevelStorageKey, snapshot.val().score.level);
+            localStorage.setItem(this.recordPointsStorageKey, snapshot.data()['points']);
+            localStorage.setItem(this.recordLevelStorageKey, snapshot.data()['level']);
+            localStorage.setItem(this.recordDateStorageKey, snapshot.data()['date']);
 
-            if (this.displayName != null && snapshot.val().name != this.displayName) {
-              update(ref(this.db, 'users/' + this.auth.currentUser?.uid),
-                {name: this.displayName})
+            if (this.displayName != null && snapshot.data()['name'] != this.displayName) {
+              const data: UpdateData<any> = {name: this.displayName};
+              updateDoc(ref, data)
                 .catch((error) => {
                   console.error(error);
                 });
             }
-
           } else {
             console.log("No data available");
           }
@@ -164,6 +207,32 @@ export class AppComponent {
     return record;
   }
 
+  getBestDate(): number {
+    let recordStorage: string | null = localStorage.getItem(this.recordDateStorageKey);
+    let record: number = 0;
+    if (recordStorage != null)
+      record = +recordStorage;
+
+    return record;
+  }
+
+  getRanking(): number {
+    let recordStorage: string | null = localStorage.getItem(this.rankingStorageKey);
+    let record: number = 0;
+    if (recordStorage != null)
+      record = +recordStorage;
+
+    return record;
+  }
+
+  getTop10(): Rank[] {
+    let top10: string | null = localStorage.getItem(this.top10StorageKey);
+    if (top10 == null)
+      return [];
+    else
+      return JSON.parse(top10);
+  }
+
   persistScore(level: number, points: number) {
     let recordPointsStorage: string | null = localStorage.getItem(this.recordPointsStorageKey);
     let recordPoints: number = 0;
@@ -171,36 +240,92 @@ export class AppComponent {
       recordPoints = +recordPointsStorage;
 
     if (points > recordPoints) {
+      let date: number = Date.now();
       localStorage.setItem(this.recordPointsStorageKey, "" + points);
       localStorage.setItem(this.recordLevelStorageKey, "" + level);
+      localStorage.setItem(this.recordDateStorageKey, "" + date);
 
-      let scoreId: string | null = localStorage.getItem(this.scoreIdLocalStorageKey);
-      if (scoreId == null) {
-        scoreId = uuidv4();
-        localStorage.setItem(this.scoreIdLocalStorageKey, scoreId);
-      }
+      let name: string = "Anonymous";
+      if (this.displayName != null)
+        name = this.displayName;
 
-      set(ref(this.db, 'users/' + this.auth.currentUser?.uid), {
-        name: "Anonymous",
-        score: {
-          level: level,
-          points: points,
-          date: formatDate(Date.now(), 'yyyy-MM-dd', "en-US"),
-          id: scoreId,
-        }
-      }).catch((error) => {
-        console.error(error);
-      });
+      const docData: DocumentData = {
+        name: name,
+        level: level,
+        points: points,
+        date: date,
+      };
+      setDoc(doc(this.db, "users", <string>this.auth.currentUser?.uid), docData)
+        .catch((error) => {
+          console.error(error);
+        }).catch((error) => console.log(error));
     }
   }
 
-  //leaderboard
-  showLeader: boolean = false;
+  //ranking
+  showRanking: boolean = false;
+  rankInProgress: boolean = false;
+  top10InProgress: boolean = false;
 
-  leaderToggleClick() {
-    //todo if true then first calculate rank and get top 10
-    // then display
-    this.showLeader = !this.showLeader;
+  rankingToggleClick() {
+    if (!this.showRanking) {
+
+      //get rank
+      if (this.getBestPoints() > 0) {
+        this.rankInProgress = true;
+
+        const queryRankMore = query(
+          collection(this.db, "users"),
+          where("points", ">", this.getBestPoints()));
+        getCountFromServer(queryRankMore)
+          .then((snapshot) => {
+            let more: number = snapshot.data().count;
+
+            const queryRankEquals = query(
+              collection(this.db, "users"),
+              where("points", "==", this.getBestPoints()),
+              where("date", "<", this.getBestDate()));
+            getCountFromServer(queryRankEquals)
+              .then((snapshot) => {
+                let equals: number = snapshot.data().count;
+                let rank: number = more + equals + 1; //+1 because rank of the player
+                localStorage.setItem(this.rankingStorageKey, "" + rank);
+                this.rankInProgress = false;
+              })
+              .catch((error) => console.log(error));
+          })
+          .catch((error) => console.log(error));
+      }
+
+      //get top10
+      this.top10InProgress = true;
+
+      const queryTop10 = query(
+        collection(this.db, "users"),
+        orderBy("points", "desc"),
+        orderBy("date", "asc"),
+        limit(10));
+      getDocs(queryTop10)
+        .then((snapshot) => {
+          let top10: Rank[] = [];
+          let i: number = 0;
+          snapshot.forEach((doc) => {
+            top10.push({
+              rank: ++i,
+              name: doc.data()['name'],
+              level: doc.data()['level'],
+              points: doc.data()['points'],
+              date: doc.data()['date'],
+            });
+          });
+          localStorage.setItem(this.top10StorageKey, JSON.stringify(top10));
+          this.top10InProgress = false;
+        })
+        .catch((error) => console.log(error));
+
+      this.showRanking = true;
+    } else
+      this.showRanking = false;
   }
 
   //settings
@@ -226,38 +351,6 @@ export class AppComponent {
       this.auth.languageCode = this.language;
     }
   }
-
-  //
-  // list() {
-  //   const auth = getAuth();
-  //
-  //   signInAnonymously(auth)
-  //     .then(() => {
-  //       // Signed in..
-  //     })
-  //     .catch((error) => {
-  //       const errorCode = error.code;
-  //       const errorMessage = error.message;
-  //       console.log(errorMessage)
-  //       // ...
-  //     });
-  //
-  //
-  //   const db = getDatabase();
-  //   const list = query(ref(db, 'scores/'), orderByChild('points'));
-  //   console.log(list.ref.toJSON())
-  //
-  //   get(list).then((snapshot) => {
-  //     if (snapshot.exists()) {
-  //       console.log(snapshot.val());
-  //     } else {
-  //       console.log("No data available");
-  //     }
-  //   }).catch((error) => {
-  //     console.error(error);
-  //   });
-  // }
-
 
   //audio
   //https://www.filippovicarelli.com/8bit-game-background-music
@@ -296,6 +389,10 @@ export class AppComponent {
     this.previousRecord = this.getBestPoints();
     this.symbols = JSON.parse(JSON.stringify(this.startSymbolsPool));
     this.symbolsAdditional = JSON.parse(JSON.stringify(this.additionalSymbolsPool));
+  }
+
+  refresh(): void {
+    window.location.reload();
   }
 
   symbols: string[] = JSON.parse(JSON.stringify(this.startSymbolsPool));
@@ -365,6 +462,9 @@ export class AppComponent {
 
   tutorialBoxClick(box: Box) {
     if (!this.tutorialComplete) {
+      if (this.sound)
+        this.hitAudio.play();
+
       box.symbol = this.applyModuloSymbol(box.symbol + 1);
       box.color = this.randomColorFromOrigin(box.color);
       box.rotate = Math.random();
@@ -402,17 +502,6 @@ export class AppComponent {
 
       this.anonymousUser();
     }
-  }
-
-  restartGameClick() {
-    this.initGame();
-
-    this.showTutorial = false;
-    this.showSettings = false;
-
-    const element = document.querySelector('#title');
-    if (element)
-      element.scrollIntoView();
   }
 
   startTimer() {
@@ -596,4 +685,12 @@ interface Box {
   symbol: number;
   color: number;
   rotate: number;
+}
+
+interface Rank {
+  rank: number;
+  name: string;
+  level: number;
+  points: number;
+  date: number;
 }

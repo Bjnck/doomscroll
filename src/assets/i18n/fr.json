@@ -8,7 +8,7 @@
     "INSTRUCTION_5": "Tu n'as que quelques secondes pour compléter un niveau",
     "END": "Finir le tutoriel",
     "CONGRATS": "Bien joué !",
-    "CONTINUE": "Tu peux maintenant démarrer le jeux"
+    "CONTINUE": "Tu peux maintenant commencer à jouer"
   },
   "GAME": {
     "START": "COMMENCER",
@@ -19,18 +19,19 @@
     "NEW_SYMBOL": "nouveau symbole",
     "POS_SYMBOL": "les symboles peuvent maintenant changer de position",
     "SHARE": "Partage ton score",
-    "SHARE_DESCRIPTION": "J'ai atteint le niveau {{level}} à Doomscroll avec {{points}} points. Peux tu battre mon score ?"
+    "SHARE_DESCRIPTION": "J'ai atteint le niveau {{level}} à Doomscroll avec {{points}} points. Peux-tu battre mon score ?"
   },
   "MUSIC": "Musique",
   "SOUND": "Son",
   "SETTINGS": "Paramètres",
   "LEADER": {
     "MENU": "Classement",
-    "PERSONAL": "Meilleur score",
+    "PERSONAL": "Ton meilleur score",
     "RANK": "Rang",
     "NEW": "Nouveau record"
   },
   "ACCOUNT": {
+    "EXPLAIN": "Connecte-toi pour sauvegarder ton score et ajouter ton nom au classement",
     "CONNECT": "Se connecter avec",
     "CONNECTED": "Connecté"
   },
