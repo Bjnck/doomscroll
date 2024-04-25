@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "doomscroll-play",
     "public": "dist/doomscroll",
     "ignore": [
       "firebase.json",

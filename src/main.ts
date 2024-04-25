@@ -2,7 +2,6 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { AppModule } from './app/app.module';
 import { initializeApp } from "firebase/app";
-// import { getDatabase } from "firebase/database";
 import { getAuth } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from 'firebase/firestore/lite';
@@ -12,11 +11,9 @@ platformBrowserDynamic().bootstrapModule(AppModule)
 
 window.onbeforeunload = function() {window.scrollTo(0,0);}
 
-
 const firebaseConfig = {
   apiKey: "AIzaSyBqyJXvncDK3ZmaJC2xw4tKzEDg8WHyQdU",
-  authDomain: "doomscroll.xyz",
-  databaseURL: "https://doomscroll-efa6f-default-rtdb.europe-west1.firebasedatabase.app",
+  authDomain: "play.doomscroll.xyz",
   projectId: "doomscroll-efa6f",
   storageBucket: "doomscroll-efa6f.appspot.com",
   messagingSenderId: "501882648257",
@@ -26,6 +23,5 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-// const database = getDatabase(app);
 const database = getFirestore(app);
 const auth = getAuth(app);

@@ -65,6 +65,18 @@ export class AppComponent {
     "../assets/menu/rank-3.png"];
 
   constructor(translate: TranslateService) {
+    //translation
+    this.translate = translate;
+    let language: string | null = localStorage.getItem(this.languageLocalStorageKey);
+    if (language == null) {
+      language = navigator.language.slice(0, 2);
+    }
+    if (this.supportedLanguages.findIndex(l => l === language) > 0) {
+      this.language = language;
+      translate.use(this.language);
+      this.auth.languageCode = this.language;
+    }
+
     //auth
     this.auth.languageCode = this.language;
     onAuthStateChanged(this.auth, (user) => {
@@ -85,6 +97,13 @@ export class AppComponent {
     });
     //this is to handle link to existing account
     getRedirectResult(this.auth)
+      .then((credential) => {
+        if (credential) {
+          let name: string | null = credential.user.providerData[0].displayName;
+          if (name != null)
+            this.updateName(credential.user.uid, name);
+        }
+      })
       .catch((error) => {
         if (error.toString().includes("auth/credential-already-in-use")) {
           localStorage.removeItem(this.recordPointsStorageKey);
@@ -94,22 +113,9 @@ export class AppComponent {
         }
       });
 
-    //translation
-    this.translate = translate;
-    let language: string | null = localStorage.getItem(this.languageLocalStorageKey);
-    if (language == null) {
-      language = navigator.language.slice(0, 2);
-    }
-    if (this.supportedLanguages.findIndex(l => l === language) > 0) {
-      this.language = language;
-      translate.use(this.language);
-      this.auth.languageCode = this.language;
-    }
-
     //audio
     this.musicAudio.load();
     this.levelAudio.load();
-    this.hitAudio.load();
     this.overAudio.load();
     this.musicAudio.loop = true;
     let music: string | null = localStorage.getItem(this.musicLocalStorageKey);
@@ -187,6 +193,15 @@ export class AppComponent {
           console.error(error);
         });
     }
+  }
+
+  updateName(userId: string, name: string) {
+    let ref = doc(this.db, "users", userId);
+    const data: UpdateData<any> = {name: this.displayName};
+    updateDoc(ref, data)
+      .catch((error) => {
+        console.error(error);
+      });
   }
 
   getBestLevel(): number {
@@ -356,7 +371,6 @@ export class AppComponent {
   //https://www.filippovicarelli.com/8bit-game-background-music
   musicAudio = new Audio("../assets/audio/sacrifice.wav");
   levelAudio = new Audio("../assets/audio/explosion.wav");
-  hitAudio = new Audio("../assets/audio/hit.wav");
   overAudio = new Audio("../assets/audio/game-over.mp3");
   music: boolean = true;
   musicLocalStorageKey: string = "music";
@@ -462,8 +476,10 @@ export class AppComponent {
 
   tutorialBoxClick(box: Box) {
     if (!this.tutorialComplete) {
-      if (this.sound)
-        this.hitAudio.play();
+      if (this.sound){
+        let hit = new Audio("../assets/audio/hit.wav");
+        hit.play();
+      }
 
       box.symbol = this.applyModuloSymbol(box.symbol + 1);
       box.color = this.randomColorFromOrigin(box.color);
@@ -574,24 +590,25 @@ export class AppComponent {
     let level = this.getLevel(num);
     if (level) {
       let symbol: number = -1;
+
       if (level.num % this.levelsForNewSymbols == 0) {
-        if (this.symbols.length == 6) {
-          this.symbols = this.symbols.sort(() => Math.random() - 0.5);
-          let remove = this.symbols.pop();
-
-          this.symbolsAdditional = this.symbolsAdditional.sort(() => Math.random() - 0.5);
-          let add = this.symbolsAdditional.pop();
-
-          if (add && remove) {
-            this.symbols.push(add);
-            this.symbolsAdditional.push(remove);
-          }
-        } else {
-          this.symbolsAdditional = this.symbolsAdditional.sort(() => Math.random() - 0.5);
-          let add = this.symbolsAdditional.pop();
-          if (add)
-            this.symbols.push(add);
-        }
+        // if (this.symbols.length == 6) {
+        //   this.symbols = this.symbols.sort(() => Math.random() - 0.5);
+        //   let remove = this.symbols.pop();
+        //
+        //   this.symbolsAdditional = this.symbolsAdditional.sort(() => Math.random() - 0.5);
+        //   let add = this.symbolsAdditional.pop();
+        //
+        //   if (add && remove) {
+        //     this.symbols.push(add);
+        //     this.symbolsAdditional.push(remove);
+        //   }
+        // } else {
+        this.symbolsAdditional = this.symbolsAdditional.sort(() => Math.random() - 0.5);
+        let add = this.symbolsAdditional.pop();
+        if (add)
+          this.symbols.push(add);
+        // }
         symbol = this.symbols.length - 1;
       }
 
@@ -622,8 +639,10 @@ export class AppComponent {
 
   boxClick(level: Level, box: Box) {
     if (level.num == this.currentLevel && !this.gameOver) {
-      if (this.sound)
-        this.hitAudio.play();
+      if (this.sound){
+        let hit = new Audio("../assets/audio/hit.wav");
+        hit.play();
+      }
 
       box.symbol = this.applyModuloSymbol(box.symbol + 1);
       box.color = this.randomColorFromOrigin(box.color);

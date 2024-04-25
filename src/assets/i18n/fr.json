@@ -19,7 +19,7 @@
     "NEW_SYMBOL": "nouveau symbole",
     "POS_SYMBOL": "les symboles peuvent maintenant changer de position",
     "SHARE": "Partage ton score",
-    "SHARE_DESCRIPTION": "J'ai atteint le niveau {{level}} à Doomscroll avec {{points}} points. Peux-tu battre mon score ?"
+    "SHARE_DESCRIPTION": "J'ai atteint le niveau {{level}} à Doomscroll avec {{points}} points."
   },
   "MUSIC": "Musique",
   "SOUND": "Son",
